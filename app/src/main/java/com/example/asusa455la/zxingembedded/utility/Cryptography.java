@@ -1,0 +1,359 @@
+package com.example.asusa455la.zxingembedded.utility;
+
+import android.content.Context;
+import android.content.res.AssetFileDescriptor;
+import android.net.Uri;
+import android.os.Build;
+import android.os.Environment;
+import android.security.KeyPairGeneratorSpec;
+import android.security.keystore.KeyGenParameterSpec;
+import android.security.keystore.KeyProperties;
+import android.util.Base64;
+import android.util.Log;
+
+import com.example.asusa455la.zxingembedded.R;
+
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x509.BasicConstraints;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.ExtensionsGenerator;
+import org.bouncycastle.operator.ContentSigner;
+import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.pkcs.PKCS10CertificationRequest;
+import org.bouncycastle.pkcs.PKCS10CertificationRequestBuilder;
+import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequestBuilder;
+import org.bouncycastle.util.io.pem.PemObject;
+import org.bouncycastle.util.io.pem.PemWriter;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.Signature;
+import java.security.SignatureException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
+import java.util.Calendar;
+import java.util.Enumeration;
+
+import javax.security.auth.x500.X500Principal;
+
+/**
+ * Created by ASUS A455LA on 11/02/2018.
+ */
+
+public class Cryptography{
+
+    public static String hashSHA256(String text){
+        MessageDigest md = null;
+        String hash = "";
+        try {
+            md = MessageDigest.getInstance("SHA-256");
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT)
+                md.update(text.getBytes(StandardCharsets.UTF_8));
+            else
+                md.update(text.getBytes("UTF-8"));
+
+            byte[] hashBytes = md.digest();
+            hash = String.format( "%064x", new BigInteger( 1, hashBytes) );
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        return hash;
+    }
+
+    public static String getDigitalSignature(String text, String alias)  {
+        String digitalSignature = "";
+        try {
+
+            // Get private key from String
+            KeyStore keyStore = KeyStore.getInstance("AndroidKeyStore");
+            keyStore.load(null);
+
+            KeyStore.Entry entry = keyStore.getEntry(alias, null);
+            KeyStore.PrivateKeyEntry privateKeyEntry = (KeyStore.PrivateKeyEntry) entry;
+            PrivateKey privateKey = privateKeyEntry.getPrivateKey();
+
+            // text to bytes
+            byte[] data = text.getBytes("UTF-8");
+
+            // signature
+            Signature sig = Signature.getInstance("SHA256withRSA");
+            sig.initSign(privateKey);
+            sig.update(data);
+            byte[] signatureBytes = sig.sign();
+
+            digitalSignature = Base64.encodeToString(signatureBytes, Base64.DEFAULT);
+
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+        return digitalSignature;
+    }
+
+    public static boolean verifyDigitalSignature(String message, String signature, PublicKey publicKey){
+        Signature sign = null;
+        boolean verification = false;
+        try {
+            sign = Signature.getInstance("SHA256withRSA");
+            sign.initVerify(publicKey);
+            sign.update(message.getBytes("UTF-8"));
+            byte[] signBytes = Base64.decode(signature.getBytes("UTF-8"), Base64.DEFAULT);
+            verification = sign.verify(signBytes);
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+        catch (InvalidKeyException e) {
+            e.printStackTrace();
+        }
+        catch (SignatureException e) {
+            e.printStackTrace();
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+
+        return verification;
+    }
+
+    private static KeyPair generateKeyPair(Context context, String commonName){
+        PrivateKey privateKey;
+        KeyPair keyPair = null;
+        KeyPairGenerator keyPairGenerator = null;
+
+        try {
+            KeyStore ks = KeyStore.getInstance("AndroidKeyStore");
+            keyPairGenerator = KeyPairGenerator.getInstance(
+                    KeyProperties.KEY_ALGORITHM_RSA, "AndroidKeyStore");
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                keyPairGenerator.initialize(new KeyGenParameterSpec.Builder(
+                        commonName,
+                        KeyProperties.PURPOSE_SIGN | KeyProperties.PURPOSE_VERIFY)
+                        .setDigests(KeyProperties.DIGEST_SHA256, KeyProperties.DIGEST_SHA512)
+                        .setKeySize(2048)
+                        .build());
+            }
+            else{
+                Calendar start = Calendar.getInstance();
+                Calendar end = Calendar.getInstance();
+                end.add(Calendar.MONTH, 12);
+
+                KeyPairGeneratorSpec spec = new KeyPairGeneratorSpec.Builder(context).setKeySize(2048)
+                        .setAlias(commonName)
+                        .setSubject(new X500Principal("CN="+commonName))
+                        .setSerialNumber(BigInteger.ONE)
+                        .setStartDate(start.getTime())
+                        .setEndDate(end.getTime())
+                        .build();
+
+                keyPairGenerator.initialize(spec);
+            }
+
+            keyPair = keyPairGenerator.generateKeyPair();
+
+            privateKey = keyPair.getPrivate();
+
+            Certificate[] chain = new Certificate[2];
+            /*String folder = Environment.getExternalStorageDirectory() + File.separator  + "CERT Folder";
+            File userCertFile = new File(folder, commonName+".crt");*/
+            //chain[2] = Cryptography.loadCertificate(userCertFile);
+/*            InputStream input = context.getResources().openRawResource(R.raw.ca_cert);
+            File caCertFile = loadCertificateFromRaw(input, "ca_cert.crt");
+            chain[0] = loadCertificate(caCertFile);
+
+            input = context.getResources().openRawResource(R.raw.intermediate_cert);
+            File intermediateCaCertFile = loadCertificateFromRaw(input, "intermediate_cert.crt");
+            chain[1] = loadCertificate(intermediateCaCertFile);*/
+
+            InputStream inputStream = context.getResources().openRawResource(R.raw.ca_cert);
+            chain[0] = loadCertificateFromRaw(inputStream);
+            inputStream = context.getResources().openRawResource(R.raw.intermediate_cert);
+            chain[1] = loadCertificateFromRaw(inputStream);
+
+            ks.load(null);
+            ks.setKeyEntry(commonName, privateKey, null, chain);
+
+
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (KeyStoreException e) {
+            e.printStackTrace();
+        } catch (InvalidAlgorithmParameterException e) {
+            e.printStackTrace();
+        } catch (NoSuchProviderException e) {
+            e.printStackTrace();
+        } /*catch (CertificateException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }*/ catch (CertificateException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return keyPair;
+    }
+
+    public static void createCertificateRequestFile(Context context, String commonName) {
+        KeyPair keyPair = generateKeyPair(context, commonName);
+
+        try{
+            PKCS10CertificationRequest csr = generateCSR(keyPair, commonName);
+            byte CSRder[] = csr.getEncoded();
+
+            StringWriter writer = new StringWriter();
+            PemWriter pemWriter = new PemWriter(writer);
+            pemWriter.writeObject(new PemObject("CERTIFICATE REQUEST", CSRder));
+            pemWriter.flush();
+            pemWriter.close();
+            String csrPEM = writer.toString();
+
+            String path =
+                    Environment.getExternalStorageDirectory() + File.separator  + "CSR Folder";
+            // Create the folder.
+            File folder = new File(path);
+            folder.mkdirs();
+
+            // Create the file.
+            File file = new File(folder, commonName+".csr");
+            file.createNewFile();
+            FileOutputStream fOut = new FileOutputStream(file);
+            OutputStreamWriter myOutWriter = new OutputStreamWriter(fOut);
+            myOutWriter.append(csrPEM);
+
+            myOutWriter.close();
+
+            fOut.flush();
+            fOut.close();
+        }
+        catch (IOException e)
+        {
+            Log.e("Exception", "File write failed: " + e.toString());
+        } catch (OperatorCreationException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public static PKCS10CertificationRequest generateCSR(KeyPair keyPair, String cn) throws IOException,
+            OperatorCreationException {
+        String principal = String.format("CN=%s", cn);
+
+        ContentSigner signer = new JCESigner(keyPair.getPrivate(),"SHA256withRSA");
+
+        PKCS10CertificationRequestBuilder csrBuilder = new JcaPKCS10CertificationRequestBuilder(
+                new X500Name(principal), keyPair.getPublic());
+        ExtensionsGenerator extensionsGenerator = new ExtensionsGenerator();
+        extensionsGenerator.addExtension(Extension.basicConstraints, true, new BasicConstraints(
+                false));
+        csrBuilder.addAttribute(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest,
+                extensionsGenerator.generate());
+        PKCS10CertificationRequest csr = csrBuilder.build(signer);
+
+        return csr;
+    }
+
+    public static X509Certificate loadCertificate(File certFile){
+        CertificateFactory certFactory;
+        FileInputStream fileInputStream;
+        X509Certificate cert = null;
+        try {
+            certFactory = CertificateFactory
+                    .getInstance("X.509");
+            fileInputStream = new FileInputStream(certFile);
+            cert = (X509Certificate) certFactory.generateCertificate(fileInputStream);
+            fileInputStream.close();
+        } catch (CertificateException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            Log.d("SERVER CERTIFICATE","Unable to load certificate " + e.getMessage());
+        } catch (FileNotFoundException e){
+            e.printStackTrace();
+            Log.d("SERVER CERTIFICATE","Server certificate file missing " + e.getMessage());
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return cert;
+    }
+
+    public static X509Certificate loadCertificateFromRaw(InputStream inputStream){
+        CertificateFactory certFactory;
+        X509Certificate cert = null;
+        try {
+            certFactory = CertificateFactory
+                    .getInstance("X.509");
+            cert = (X509Certificate) certFactory.generateCertificate(inputStream);
+            inputStream.close();
+        } catch (CertificateException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            Log.d("SERVER CERTIFICATE","Unable to load certificate " + e.getMessage());
+        } catch (FileNotFoundException e){
+            e.printStackTrace();
+            Log.d("SERVER CERTIFICATE","Server certificate file missing " + e.getMessage());
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return cert;
+    }
+
+    /*static String enccriptData(String txt)
+    {
+        String encoded = "";
+        byte[] encrypted = null;
+        try {
+            byte[] publicBytes = Base64.decode(privateKey, Base64.DEFAULT);
+            X509EncodedKeySpec keySpec = new X509EncodedKeySpec(publicBytes);
+            KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+            PublicKey pubKey = keyFactory.generatePublic(keySpec);
+            Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1PADDING"); //or try with "RSA"
+            cipher.init(Cipher.ENCRYPT_MODE, pubKey);
+            encrypted = cipher.doFinal(txt.getBytes());
+            encoded = Base64.encodeToString(encrypted, Base64.DEFAULT);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        return encoded;
+    }*/
+
+/*    public static String produceSalt(){
+        SecureRandom random = new SecureRandom();
+        byte[] salt = new byte[17];
+        random.nextBytes(salt);
+
+        StringBuffer sb = new StringBuffer();
+
+        for (int i = 0; i < salt.length; i++){
+            sb.append(Integer.toString((salt[i] & 0xff) + 0x100, 16).substring(1));
+        }
+        return sb.toString();
+    }*/
+}

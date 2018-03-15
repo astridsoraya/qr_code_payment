@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.asusa455la.zxingembedded">
+
+    <!-- To auto-complete the email text field in the login form with the user's emails -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <application
+        android:name=".utility.AppController"
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+        <activity
+            android:name=".view.customer.CustomerMainMenu"
+            android:label="@string/title_activity_customer_main"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".view.intro.Login"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".view.customer.CustomerRegistration"
+            android:label="@string/title_activity_registration_customer"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".view.merchant.MerchantMainMenu"
+            android:label="@string/title_activity_merchant_main"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".view.intro.ChooseAccountType"
+            android:label="@string/title_activity_choose_account_type"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".view.merchant.MerchantRegistration"
+            android:label="@string/title_activity_registration_merchant"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".view.merchant.MerchantProfile"
+            android:label="@string/title_activity_merchant_profile"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".view.customer.CustomerProfile"
+            android:label="@string/title_activity_customer_profile"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".view.merchant.ItemList"
+            android:label="@string/title_activity_item_list"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".view.merchant.AddItem"
+            android:label="@string/title_activity_add_item"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".view.merchant.MerchantOrder"
+            android:label="@string/title_activity_merchant_order"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".view.merchant.MerchantPrintQRCode"
+            android:label="@string/title_activity_merchant_print_qrcode"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".view.customer.CustomerPayment"
+            android:label="@string/title_activity_customer_payment"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".view.intro.CreateWallet"
+            android:label="@string/title_activity_create_wallet"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".view.customer.CaptureQRCode"
+            android:label="@string/title_activity_capture_qrcode"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".view.customer.ConfirmPayment"
+            android:label="@string/title_activity_confirm_payment"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".view.customer.CustomerOrderHistory"
+            android:label="@string/title_activity_customer_order_history"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".view.merchant.MerchantOrderHistory"
+            android:label="@string/title_activity_merchant_order_history"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
+    </application>
+
+</manifest>

@@ -1,0 +1,51 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 1,
+    "identityHash": "42047710754236eee8f1daafc3f53e36",
+    "entities": [
+      {
+        "tableName": "Item",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`idBarang` TEXT NOT NULL, `namaBarang` TEXT, `harga` INTEGER NOT NULL, `stok` INTEGER NOT NULL, PRIMARY KEY(`idBarang`))",
+        "fields": [
+          {
+            "fieldPath": "idBarang",
+            "columnName": "idBarang",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "namaBarang",
+            "columnName": "namaBarang",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "harga",
+            "columnName": "harga",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "stok",
+            "columnName": "stok",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "idBarang"
+          ],
+          "autoGenerate": false
+        },
+        "indices": [],
+        "foreignKeys": []
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"42047710754236eee8f1daafc3f53e36\")"
+    ]
+  }
+}

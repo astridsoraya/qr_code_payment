@@ -1,0 +1,70 @@
+<resources>
+    <string name="app_name">QR Code Payment</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_login">Sign in</string>
+
+    <!-- Strings related to login -->
+    <string name="prompt_email">Email</string>
+    <string name="prompt_password">Password</string>
+    <string name="action_sign_in">Sign in</string>
+    <string name="action_sign_in_short">Sign in</string>
+
+    <string name="prompt_register">Don\'t have an account?</string>
+    <string name="action_register">Sign up now!</string>
+    <string name="confirm_payment_caption">Silakan masukkan PIN untuk melakukan konfirmasi pembayaran</string>
+    <string name="insert_pin_caption">Silakan masukkan 4 digit PIN. PIN akan digunakan untuk melakukan konfirmasi pembayaran. </string>
+
+    <string name="choose_customer_signup">If you\'re a customer who wants to buy products, click the button below: </string>
+    <string name="choose_merchant_signup">Or are you a merchant? If yes, please click the button below: </string>
+
+
+    <string name="button_public_key"> Show public key </string>
+
+    <string name="error_invalid_email">This email address is invalid</string>
+    <string name="error_invalid_password">This password is too short</string>
+    <string name="error_incorrect_password">This password is incorrect</string>
+    <string name="error_field_required">This field is required</string>
+    <string name="permission_rationale">"Contacts permissions are needed for providing email
+        completions."
+    </string>
+    <string name="title_activity_registration">Registration</string>
+    <string name="title_activity_customer_main">Customer\'s Homepage</string>
+    <string name="title_activity_merchant_main">Merchant\'s Homepage</string>
+    <string name="title_activity_choose_account_type">Choose Account Type</string>
+    <string name="title_activity_registration_merchant">Merchant Registration</string>
+    <string name="title_activity_registration_customer">Customer Registration</string>
+
+    <string name="title_activity_merchant_profile">Merchant\'s profile</string>
+    <string name="title_activity_customer_profile">Customer\'s profile</string>
+    <string name="title_activity_order_item">Order an item</string>
+
+    <string name="shared_pref_appname">sp_qr_payment_app</string>
+    <string name="shared_pref_has_login">sp_has_login</string>
+    <string name="shared_pref_id_user">sp_id_user</string>
+    <string name="shared_pref_user_type">sp_user_type</string>
+    <string name="shared_pref_email">sp_email</string>
+    <string name="shared_pref_merchant_name">sp_merchant_name</string>
+    <string name="shared_pref_first_name">sp_first_name</string>
+    <string name="shared_pref_last_name">sp_last_name</string>
+    <string name="shared_pref_handphone_number">sp_handphone_number</string>
+    <string name="shared_pref_merchant_address">sp_merchant_address</string>
+
+    <string name="title_activity_merchant_order">Make an order</string>
+    <string name="title_activity_merchant_history">Merchant\'s transaction history </string>
+    <string name="title_activity_customer_history">Customer\'s transaction history</string>
+
+    <string name="title_activity_merchant_print_qrcode">QR Code payment</string>
+    <string name="title_activity_customer_payment">Pay Order</string>
+    <string name="title_activity_capture_qr">Capture QR Code</string>
+    <string name="title_activity_create_wallet">Create Wallet</string>
+    <string name="title_activity_capture_qrcode">Capture a QR Code</string>
+    <string name="title_activity_customer_insert_pin">Customer Insert PIN</string>
+    <string name="title_activity_confirm_payment">Confirm Payment</string>
+    <string name="title_activity_item_list">Items list</string>
+    <string name="title_activity_add_item">Add item</string>
+    <string name="title_activity_customer_order_history">CustomerOrderHistory</string>
+    <string name="title_activity_merchant_order_history">MerchantOrderHistory</string>
+
+</resources>
+
+
