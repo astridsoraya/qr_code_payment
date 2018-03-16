@@ -1,25 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.example.asusa455la.zxingembedded.view.merchant.MerchantPrintQRCode">
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context="com.example.asusa455la.zxingembedded.view.merchant.MerchantPrintQRCode"
+    tools:layout_editor_absoluteY="81dp"
+    tools:showIn="@layout/activity_merchant_print_qrcode">
 
-    <android.support.design.widget.AppBarLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:theme="@style/AppTheme.AppBarOverlay">
+    <TextView
+        android:id="@+id/textView11"
+        android:layout_width="0dp"
+        android:layout_height="49dp"
+        android:layout_marginBottom="39dp"
+        android:layout_marginEnd="35dp"
+        android:layout_marginStart="35dp"
+        android:layout_marginTop="16dp"
+        android:text="Scan the QR code to pay"
+        android:textSize="28dp"
+        app:layout_constraintBottom_toTopOf="@+id/mQRCodeView"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
-        <android.support.v7.widget.Toolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="?attr/colorPrimary"
-            app:popupTheme="@style/AppTheme.PopupOverlay" />
-
-    </android.support.design.widget.AppBarLayout>
-
-    <include layout="@layout/content_merchant_print_qrcode" />
-
-</android.support.design.widget.CoordinatorLayout>
+    <ImageView
+        android:id="@+id/mQRCodeView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginBottom="109dp"
+        android:layout_marginEnd="36dp"
+        android:layout_marginStart="36dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView11" />
+</android.support.constraint.ConstraintLayout>
