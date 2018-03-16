@@ -66,7 +66,7 @@ public class ConfirmPayment extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_confirm_payment);
 
-        this.confirmPaymentButton = (Button) findViewById(R.id.cConfirmPaymentButton);
+        this.confirmPaymentButton = findViewById(R.id.cConfirmPaymentButton);
         this.confirmPaymentButton.setOnClickListener(new View.OnClickListener(){
 
             @Override
@@ -75,14 +75,14 @@ public class ConfirmPayment extends AppCompatActivity {
             }
         });
 
-        this.cPINEditText = (EditText) findViewById(R.id.cConfirmPINEditText);
+        this.cPINEditText = findViewById(R.id.cConfirmPINEditText);
         this.cPINEditText.addTextChangedListener(this.textWatcher);
 
     }
 
     private void confirmPayment(){
         Intent intent = this.getIntent();
-        final String idOrder = intent.getExtras().getString("QRCodeData");
+        final String idOrder = intent.getExtras().getString("order_data");
 
         SharedPreferences sharedPreferences = getSharedPreferences(getString(R.string.shared_pref_appname), Context.MODE_PRIVATE);
         final String idCustomer  = sharedPreferences.getString(getString(R.string.shared_pref_id_user), "");
@@ -102,7 +102,7 @@ public class ConfirmPayment extends AppCompatActivity {
                     @Override
                     public void onResponse(String response)
                     {
-                        Log.d(AppController.TAG, response.toString());
+                        Log.d(AppController.TAG, response);
 
                         try {
                             JSONObject jsonObject = new JSONObject(response);
@@ -138,7 +138,7 @@ public class ConfirmPayment extends AppCompatActivity {
             @Override
             protected Map<String, String> getParams()
             {
-                Map<String, String> params = new HashMap<String, String>();
+                Map<String, String> params = new HashMap<>();
 
                 params.put("id_order", idOrder);
                 params.put("id_customer", idCustomer);

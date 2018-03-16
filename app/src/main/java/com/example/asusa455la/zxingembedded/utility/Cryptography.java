@@ -1,5 +1,6 @@
 package com.example.asusa455la.zxingembedded.utility;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
 import android.net.Uri;
@@ -10,6 +11,7 @@ import android.security.keystore.KeyGenParameterSpec;
 import android.security.keystore.KeyProperties;
 import android.util.Base64;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.example.asusa455la.zxingembedded.R;
 
@@ -37,6 +39,7 @@ import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -60,6 +63,14 @@ import java.util.Enumeration;
 
 import javax.security.auth.x500.X500Principal;
 
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import okio.BufferedSink;
+import okio.Okio;
+
 /**
  * Created by ASUS A455LA on 11/02/2018.
  */
@@ -67,7 +78,7 @@ import javax.security.auth.x500.X500Principal;
 public class Cryptography{
 
     public static String hashSHA256(String text){
-        MessageDigest md = null;
+        MessageDigest md;
         String hash = "";
         try {
             md = MessageDigest.getInstance("SHA-256");
@@ -116,7 +127,7 @@ public class Cryptography{
     }
 
     public static boolean verifyDigitalSignature(String message, String signature, PublicKey publicKey){
-        Signature sign = null;
+        Signature sign;
         boolean verification = false;
         try {
             sign = Signature.getInstance("SHA256withRSA");
@@ -142,7 +153,7 @@ public class Cryptography{
     private static KeyPair generateKeyPair(Context context, String commonName){
         PrivateKey privateKey;
         KeyPair keyPair = null;
-        KeyPairGenerator keyPairGenerator = null;
+        KeyPairGenerator keyPairGenerator;
 
         try {
             KeyStore ks = KeyStore.getInstance("AndroidKeyStore");
@@ -190,9 +201,9 @@ public class Cryptography{
             chain[1] = loadCertificate(intermediateCaCertFile);*/
 
             InputStream inputStream = context.getResources().openRawResource(R.raw.ca_cert);
-            chain[0] = loadCertificateFromRaw(inputStream);
+            chain[0] = loadCertificate(inputStream);
             inputStream = context.getResources().openRawResource(R.raw.intermediate_cert);
-            chain[1] = loadCertificateFromRaw(inputStream);
+            chain[1] = loadCertificate(inputStream);
 
             ks.load(null);
             ks.setKeyEntry(commonName, privateKey, null, chain);
@@ -206,11 +217,7 @@ public class Cryptography{
             e.printStackTrace();
         } catch (NoSuchProviderException e) {
             e.printStackTrace();
-        } /*catch (CertificateException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }*/ catch (CertificateException e) {
+        } catch (CertificateException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
@@ -236,13 +243,16 @@ public class Cryptography{
             String path =
                     Environment.getExternalStorageDirectory() + File.separator  + "CSR Folder";
             // Create the folder.
-            File folder = new File(path);
-            folder.mkdirs();
+            File csrFolder = new File(path);
+
+            if(!csrFolder.exists()){
+                boolean created = csrFolder.mkdirs();
+            }
 
             // Create the file.
-            File file = new File(folder, commonName+".csr");
-            file.createNewFile();
-            FileOutputStream fOut = new FileOutputStream(file);
+            File csrFile = new File(csrFolder, commonName+".csr");
+            boolean created = csrFile.createNewFile();
+            FileOutputStream fOut = new FileOutputStream(csrFile);
             OutputStreamWriter myOutWriter = new OutputStreamWriter(fOut);
             myOutWriter.append(csrPEM);
 
@@ -260,7 +270,7 @@ public class Cryptography{
 
     }
 
-    public static PKCS10CertificationRequest generateCSR(KeyPair keyPair, String cn) throws IOException,
+    private static PKCS10CertificationRequest generateCSR(KeyPair keyPair, String cn) throws IOException,
             OperatorCreationException {
         String principal = String.format("CN=%s", cn);
 
@@ -302,7 +312,7 @@ public class Cryptography{
         return cert;
     }
 
-    public static X509Certificate loadCertificateFromRaw(InputStream inputStream){
+    private static X509Certificate loadCertificate(InputStream inputStream){
         CertificateFactory certFactory;
         X509Certificate cert = null;
         try {
@@ -323,6 +333,44 @@ public class Cryptography{
         }
         return cert;
     }
+
+    /*public static void downloadCertificate(URL url, String saveFilename){
+        final String filename = saveFilename;
+
+        OkHttpClient client = new OkHttpClient();
+
+        Request request = new Request.Builder()
+                .url(url)
+                .build();
+
+        client.newCall(request)
+                .enqueue(new Callback() {
+                    @Override
+                    public void onFailure(final Call call, IOException e) {
+                        // Error
+                        System.out.println("Error okHTTP: " + e.toString());
+                    }
+
+                    @Override
+                    public void onResponse(Call call, final Response response) throws IOException {
+                        File downloadedFile = new File(Environment.getExternalStorageDirectory() + File.separator + "CERT Folder", filename);
+                        BufferedSink sink = Okio.buffer(Okio.sink(downloadedFile));
+                        sink.writeAll(response.body().source());
+                        sink.close();
+                        response.body().source().close();
+                        downloadedFile.createNewFile();
+                        System.out.println("Infinite Tell Me");
+
+*//*                        InputStream is = response.body().byteStream();
+
+
+
+                        response.body().source().close();
+
+                        pDialog.hide();*//*
+                    }
+                });
+    }*/
 
     /*static String enccriptData(String txt)
     {

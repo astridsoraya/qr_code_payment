@@ -91,7 +91,7 @@
         <activity
             android:name=".view.merchant.MerchantOrderHistory"
             android:label="@string/title_activity_merchant_order_history"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
     </application>
 
 </manifest>
