@@ -61,6 +61,10 @@ import java.security.cert.X509Certificate;
 import java.util.Calendar;
 import java.util.Enumeration;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import javax.security.auth.x500.X500Principal;
 
 import okhttp3.Call;
@@ -77,7 +81,7 @@ import okio.Okio;
 
 public class Cryptography{
 
-    public static String hashSHA256(String text){
+/*    public static String hashSHA256(String text){
         MessageDigest md;
         String hash = "";
         try {
@@ -95,20 +99,11 @@ public class Cryptography{
             e.printStackTrace();
         }
         return hash;
-    }
+    }*/
 
-    public static String getDigitalSignature(String text, String alias)  {
+    public static String getDigitalSignature(String text, PrivateKey privateKey)  {
         String digitalSignature = "";
         try {
-
-            // Get private key from String
-            KeyStore keyStore = KeyStore.getInstance("AndroidKeyStore");
-            keyStore.load(null);
-
-            KeyStore.Entry entry = keyStore.getEntry(alias, null);
-            KeyStore.PrivateKeyEntry privateKeyEntry = (KeyStore.PrivateKeyEntry) entry;
-            PrivateKey privateKey = privateKeyEntry.getPrivateKey();
-
             // text to bytes
             byte[] data = text.getBytes("UTF-8");
 
@@ -150,6 +145,56 @@ public class Cryptography{
         return verification;
     }
 
+/*    public static String encrypt(String plaintext, PublicKey publicKey)
+    {
+        String encryptedText = "";
+        try {
+            Cipher cipher = Cipher.getInstance("RSA");
+            cipher.init(Cipher.ENCRYPT_MODE, publicKey);
+            byte[] encryptedBytes = cipher.doFinal(plaintext.getBytes("UTF-8"));
+            encryptedText = Base64.encodeToString(encryptedBytes, Base64.DEFAULT);
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (InvalidKeyException e) {
+            e.printStackTrace();
+        } catch (NoSuchPaddingException e) {
+            e.printStackTrace();
+        } catch (BadPaddingException e) {
+            e.printStackTrace();
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        } catch (IllegalBlockSizeException e) {
+            e.printStackTrace();
+        }
+
+        return encryptedText;
+    }
+
+    public static String decrypt(String ciphertext, PrivateKey privateKey){
+        String decryptedText = "";
+
+        try {
+            Cipher cipher = Cipher.getInstance("RSA");
+            cipher.init(Cipher.DECRYPT_MODE, privateKey);
+            byte[] decryptedBytes = Base64.decode(ciphertext.getBytes("UTF-8"), Base64.DEFAULT);
+            decryptedText = new String (cipher.doFinal(decryptedBytes));
+        } catch (InvalidKeyException e) {
+            e.printStackTrace();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (NoSuchPaddingException e) {
+            e.printStackTrace();
+        } catch (BadPaddingException e) {
+            e.printStackTrace();
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        } catch (IllegalBlockSizeException e) {
+            e.printStackTrace();
+        }
+
+        return decryptedText;
+    }*/
+
     private static KeyPair generateKeyPair(Context context, String commonName){
         PrivateKey privateKey;
         KeyPair keyPair = null;
@@ -189,16 +234,6 @@ public class Cryptography{
             privateKey = keyPair.getPrivate();
 
             Certificate[] chain = new Certificate[2];
-            /*String folder = Environment.getExternalStorageDirectory() + File.separator  + "CERT Folder";
-            File userCertFile = new File(folder, commonName+".crt");*/
-            //chain[2] = Cryptography.loadCertificate(userCertFile);
-/*            InputStream input = context.getResources().openRawResource(R.raw.ca_cert);
-            File caCertFile = loadCertificateFromRaw(input, "ca_cert.crt");
-            chain[0] = loadCertificate(caCertFile);
-
-            input = context.getResources().openRawResource(R.raw.intermediate_cert);
-            File intermediateCaCertFile = loadCertificateFromRaw(input, "intermediate_cert.crt");
-            chain[1] = loadCertificate(intermediateCaCertFile);*/
 
             InputStream inputStream = context.getResources().openRawResource(R.raw.ca_cert);
             chain[0] = loadCertificate(inputStream);
@@ -370,26 +405,6 @@ public class Cryptography{
                         pDialog.hide();*//*
                     }
                 });
-    }*/
-
-    /*static String enccriptData(String txt)
-    {
-        String encoded = "";
-        byte[] encrypted = null;
-        try {
-            byte[] publicBytes = Base64.decode(privateKey, Base64.DEFAULT);
-            X509EncodedKeySpec keySpec = new X509EncodedKeySpec(publicBytes);
-            KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-            PublicKey pubKey = keyFactory.generatePublic(keySpec);
-            Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1PADDING"); //or try with "RSA"
-            cipher.init(Cipher.ENCRYPT_MODE, pubKey);
-            encrypted = cipher.doFinal(txt.getBytes());
-            encoded = Base64.encodeToString(encrypted, Base64.DEFAULT);
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-        return encoded;
     }*/
 
 /*    public static String produceSalt(){

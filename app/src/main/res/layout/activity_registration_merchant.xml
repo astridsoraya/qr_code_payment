@@ -9,6 +9,20 @@
     tools:layout_editor_absoluteY="81dp"
     tools:showIn="@layout/activity_registration_merchant">
 
+    <android.support.design.widget.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:theme="@style/AppTheme.AppBarOverlay">
+
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/registerToolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorPrimary"
+            app:popupTheme="@style/AppTheme.PopupOverlay" />
+
+    </android.support.design.widget.AppBarLayout>
+
     <TextView
         android:id="@+id/mMerchantNameTextView"
         android:layout_width="wrap_content"

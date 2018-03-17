@@ -238,7 +238,7 @@ public class CustomerOrderHistory extends ListActivity {
                 String[] splitKuantitas = kuantitas.split(";");
                 int totalHarga = 0;
 
-                for(int j = 0; j < prices.length; j++){
+                for(int j = 0; j < prices.length; j++) {
                     int tempHargaItem = Integer.parseInt(prices[j]) * Integer.parseInt(splitKuantitas[j]);
                     totalHarga += tempHargaItem;
                 }

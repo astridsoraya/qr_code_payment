@@ -43,16 +43,16 @@ public class MerchantRegistration extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_registration_merchant);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        mMerchantNameEditText = (EditText) findViewById(R.id.mProfileNameTextBox);
-        mEmailAddressEditText = (EditText) findViewById(R.id.mEmailAddressTextBox);
-        mPasswordEditText = (EditText) findViewById(R.id.mPasswordTextBox);
-        mHandphoneNumberEditText = (EditText) findViewById(R.id.mHandphoneNumberTextBox);
-        mAddressEditText = (EditText) findViewById(R.id.mAddressEditText);
+        mMerchantNameEditText = findViewById(R.id.mProfileNameTextBox);
+        mEmailAddressEditText = findViewById(R.id.mEmailAddressTextBox);
+        mPasswordEditText = findViewById(R.id.mPasswordTextBox);
+        mHandphoneNumberEditText = findViewById(R.id.mHandphoneNumberTextBox);
+        mAddressEditText = findViewById(R.id.mAddressEditText);
 
-        mRegisterButton = (Button) findViewById(R.id.mRegisterButton);
+        mRegisterButton =  findViewById(R.id.mRegisterButton);
         mRegisterButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

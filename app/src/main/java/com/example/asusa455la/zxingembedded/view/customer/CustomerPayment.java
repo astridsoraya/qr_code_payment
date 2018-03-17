@@ -52,8 +52,6 @@ import java.util.Map;
 public class CustomerPayment extends AppCompatActivity {
     private static String urlCheckPayment = "http://localhost:5000/check_payment.php";
 
-    private Certificate digitalCertificate;
-
     private Button cPayButton;
     private static TextView cPaymentDetail;
 
@@ -276,8 +274,6 @@ public class CustomerPayment extends AppCompatActivity {
                 File certFile = new File(Environment.getExternalStorageDirectory() + File.separator + "CERT Folder", digitalCertPath);
                 Certificate digitalCertificate = Cryptography.loadCertificate(certFile);
 
-                System.out.println("Kunci publik: " + digitalCertificate.getPublicKey().toString());
-
                 if(!verifyQRCodeData(qrCodeData, digitalCertificate)){
                     AlertDialog.Builder builder = new AlertDialog.Builder(context);
                     builder.setMessage("QR Code data is not authentic! Returning to main menu.")
@@ -315,9 +311,9 @@ public class CustomerPayment extends AppCompatActivity {
                     display += "\nTotal Harga: " + totalHarga;
                     cPaymentDetail.setText(display);
                 }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
             pDialog.dismiss();
         }
 
@@ -325,9 +321,10 @@ public class CustomerPayment extends AppCompatActivity {
             String[] splitQRCodeData = qrCodeData.split(";");
             final String idOrder = splitQRCodeData[0];
             final String namaMerchant = splitQRCodeData[1];
+            final String totalHarga = splitQRCodeData[2];
 
             return Cryptography.verifyDigitalSignature(idOrder+";"
-                    +namaMerchant+";",splitQRCodeData[2], certificate.getPublicKey());
+                    +namaMerchant+";" + totalHarga,splitQRCodeData[3], certificate.getPublicKey());
         }
     }
 }

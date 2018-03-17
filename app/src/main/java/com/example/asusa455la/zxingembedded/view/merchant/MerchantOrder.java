@@ -52,6 +52,8 @@ public class MerchantOrder extends AppCompatActivity {
     private ListView itemListView;
     private Button orderItemButton;
 
+    private int totalHarga;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -187,7 +189,7 @@ public class MerchantOrder extends AppCompatActivity {
             /*}*/
 
             Intent intent = new Intent(this, MerchantPrintQRCode.class);
-            intent.putExtra("QRCodeData", idOrder+";"+getNamaMerchant()+";");
+            intent.putExtra("QRCodeData", idOrder+";"+getNamaMerchant()+";" + totalHarga);
             this.onPause();
             startActivity(intent);
 
@@ -259,6 +261,9 @@ public class MerchantOrder extends AppCompatActivity {
                         harga.setText(tempHarga+"");
 
                         quantityArray[position] = tempQuantity;
+
+                        totalHarga+= angkaHarga;
+                        System.out.println("Total Harga sementara: " + totalHarga);
                     }
                 });
                 minQuantity.setOnClickListener(new View.OnClickListener() {
@@ -268,6 +273,9 @@ public class MerchantOrder extends AppCompatActivity {
                         if(tempQuantity > 0){
                             tempQuantity--;
                             quantity.setText(tempQuantity+"");
+
+                            totalHarga -= angkaHarga;
+                            System.out.println("Total Harga sementara: " + totalHarga);
                         }
 
                         int tempHarga = angkaHarga;
