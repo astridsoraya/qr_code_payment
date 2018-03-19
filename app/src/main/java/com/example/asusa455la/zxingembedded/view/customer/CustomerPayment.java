@@ -20,11 +20,10 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.android.volley.Request;
-import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.VolleyLog;
 import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.example.asusa455la.zxingembedded.R;
 import com.example.asusa455la.zxingembedded.utility.AppController;
 import com.example.asusa455la.zxingembedded.utility.Cryptography;
@@ -47,6 +46,10 @@ import java.net.URL;
 import java.security.cert.Certificate;
 import java.util.HashMap;
 import java.util.Map;
+
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 
 public class CustomerPayment extends AppCompatActivity {
@@ -88,8 +91,8 @@ public class CustomerPayment extends AppCompatActivity {
         SharedPreferences sharedPreferences = getSharedPreferences(getString(R.string.shared_pref_appname), Context.MODE_PRIVATE);
         final String idCustomer = sharedPreferences.getString(getString(R.string.shared_pref_id_user), "");
 
-        StringRequest strRequest = new StringRequest(Request.Method.POST, urlCheckPayment,
-                new Response.Listener<String>()
+        StringRequest strRequest = new StringRequest(com.android.volley.Request.Method.POST, urlCheckPayment,
+                new com.android.volley.Response.Listener<String>()
                 {
                     @Override
                     public void onResponse(String response)
@@ -113,7 +116,7 @@ public class CustomerPayment extends AppCompatActivity {
                         }
                     }
                 },
-                new Response.ErrorListener()
+                new com.android.volley.Response.ErrorListener()
                 {
                     @Override
                     public void onErrorResponse(VolleyError error)
@@ -168,11 +171,11 @@ public class CustomerPayment extends AppCompatActivity {
 
 
     private static class QRCodeVerifier extends AsyncTask<String, Integer, String> {
-
         private Context context;
         private ProgressDialog pDialog;
         private String qrCodeData;
         private JSONArray jsonArray;
+        private Certificate digitalCertificate;
 
         QRCodeVerifier(Context context, String qrCodeData, JSONArray jsonArray) {
             this.context = context;
@@ -194,14 +197,28 @@ public class CustomerPayment extends AppCompatActivity {
 
         @Override
         protected String doInBackground(String... sUrl) {
-            String digitalCertPath = "";
+/*            String digitalCertPath = "";
             try {
                 JSONObject tempJSONObject = jsonArray.getJSONObject(0);
                 digitalCertPath = tempJSONObject.getString("digital_certificate");
             } catch (JSONException e) {
                 e.printStackTrace();
-            }
+            }*/
 
+            OkHttpClient client = new OkHttpClient();
+
+            Request request = new Request.Builder()
+                    .url(sUrl[0])
+                    .build();
+
+            try (Response response = client.newCall(request).execute()) {
+                InputStream is = response.body().byteStream();
+                digitalCertificate = Cryptography.loadCertificate(is);
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+/*
             InputStream input = null;
             OutputStream output = null;
             HttpURLConnection connection = null;
@@ -255,7 +272,7 @@ public class CustomerPayment extends AppCompatActivity {
 
                 if (connection != null)
                     connection.disconnect();
-            }
+            }*/
             return null;
         }
 
@@ -269,10 +286,12 @@ public class CustomerPayment extends AppCompatActivity {
 
             try{
                 JSONObject tempJSONObject = jsonArray.getJSONObject(0);
+/*
                 String digitalCertPath = tempJSONObject.getString("digital_certificate");
 
                 File certFile = new File(Environment.getExternalStorageDirectory() + File.separator + "CERT Folder", digitalCertPath);
                 Certificate digitalCertificate = Cryptography.loadCertificate(certFile);
+*/
 
                 if(!verifyQRCodeData(qrCodeData, digitalCertificate)){
                     AlertDialog.Builder builder = new AlertDialog.Builder(context);
@@ -307,7 +326,6 @@ public class CustomerPayment extends AppCompatActivity {
                         display += String.format("%s: %d x%d%n", namaBarang, harga, kuantitas);
 
                     }
-                    boolean deleted = certFile.delete();
                     display += "\nTotal Harga: " + totalHarga;
                     cPaymentDetail.setText(display);
                 }

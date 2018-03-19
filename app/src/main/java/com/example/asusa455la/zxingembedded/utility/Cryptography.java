@@ -347,7 +347,7 @@ public class Cryptography{
         return cert;
     }
 
-    private static X509Certificate loadCertificate(InputStream inputStream){
+    public static X509Certificate loadCertificate(InputStream inputStream){
         CertificateFactory certFactory;
         X509Certificate cert = null;
         try {
