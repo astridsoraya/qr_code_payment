@@ -28,7 +28,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class CustomerRegistration extends AppCompatActivity {
-    private static String urlRegister = "http://localhost:5000/register.php";
+    private static String urlRegister = "https://qrcodepayment.crabdance.com/register.php";
 
     private EditText firstNameTextBox;
     private EditText lastNameTextBox;

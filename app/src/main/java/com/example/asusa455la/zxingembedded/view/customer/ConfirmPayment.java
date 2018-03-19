@@ -32,7 +32,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ConfirmPayment extends AppCompatActivity {
-    private static String urlConfirmPayment = "http://localhost:5000/confirm_payment.php";
+    private static String urlConfirmPayment = "https://qrcodepayment.crabdance.com/confirm_payment.php";
 
     private TextWatcher textWatcher = new TextWatcher() {
         @Override

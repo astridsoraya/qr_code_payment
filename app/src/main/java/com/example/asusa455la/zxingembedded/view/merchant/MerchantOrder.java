@@ -41,7 +41,7 @@ import java.util.List;
 import java.util.Map;
 
 public class MerchantOrder extends AppCompatActivity {
-    private static String urlOrderItems = "http://localhost:5000/add_order_items.php";
+    private static String urlOrderItems = "https://qrcodepayment.crabdance.com/add_order_items.php";
 
     private AppDatabase appDatabase;
 

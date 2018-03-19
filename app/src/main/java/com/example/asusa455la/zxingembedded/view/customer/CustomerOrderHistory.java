@@ -55,7 +55,7 @@ import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManagerFactory;
 
 public class CustomerOrderHistory extends ListActivity {
-    private static String urlListOrder = "http://localhost:5000/list_order.php";
+    private static String urlListOrder = "https://qrcodepayment.crabdance.com/list_order.php";
 
     private ArrayAdapter<String> orderAdapter;
     private ListView orderListView;

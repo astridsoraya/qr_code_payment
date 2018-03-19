@@ -50,7 +50,7 @@ import java.util.Map;
 
 
 public class CustomerPayment extends AppCompatActivity {
-    private static String urlCheckPayment = "http://localhost:5000/check_payment.php";
+    private static String urlCheckPayment = "https://qrcodepayment.crabdance.com/check_payment.php";
 
     private Button cPayButton;
     private static TextView cPaymentDetail;
@@ -146,7 +146,7 @@ public class CustomerPayment extends AppCompatActivity {
             String digitalCertPath = tempJSONObject.getString("digital_certificate");
             Intent intent = this.getIntent();
             String qrCodeData = intent.getExtras().getString("QRCodeData");
-            new QRCodeVerifier(this, qrCodeData, jsonOrder).execute("http://localhost:5000/upload/certs/"+digitalCertPath);
+            new QRCodeVerifier(this, qrCodeData, jsonOrder).execute("https://qrcodepayment.crabdance.com/upload/certs/"+digitalCertPath);
         } catch (JSONException e) {
             e.printStackTrace();
         }
