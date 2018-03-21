@@ -126,8 +126,8 @@ public class CustomerMainMenu extends AppCompatActivity {
 
             @Override
             public void onClick(View view) {
-                testCrypto();
-                //uploadImage();
+                //testCrypto();
+                uploadImage();
             }
         });
 
@@ -142,45 +142,6 @@ public class CustomerMainMenu extends AppCompatActivity {
                 finishActivity();
             }
         });
-    }
-
-    private void testCrypto(){
-        try {
-            String email_address = sharedPreferences.getString(getString(R.string.shared_pref_email), "");
-            KeyStore keyStore = KeyStore.getInstance("AndroidKeyStore");
-            keyStore.load(null);
-
-            KeyStore.Entry entry = keyStore.getEntry(email_address, null);
-
-            KeyStore.PrivateKeyEntry privateKeyEntry = (KeyStore.PrivateKeyEntry) entry;
-            PrivateKey privateKey = privateKeyEntry.getPrivateKey();
-
-            String folderCERT = Environment.getExternalStorageDirectory() + File.separator  + "CERT Folder";
-            File certFile = new File(folderCERT, email_address + ".crt");
-            Certificate certificate = Cryptography.loadCertificate(certFile);
-            PublicKey publicKey = certificate.getPublicKey();
-
-            String plaintext = "The world is ours.";
-
-            String encryptedText = Cryptography.encrypt(plaintext, publicKey);
-            String decryptedText = Cryptography.decrypt(encryptedText, privateKey);
-
-            String encrypted = "Encrypted: " + encryptedText;
-            String decrypted = "Decrypted: " + decryptedText;
-
-            Toast.makeText(getApplicationContext(), plaintext+"\n"+encrypted+"\n"+decrypted, Toast.LENGTH_LONG).show();
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (CertificateException e) {
-            e.printStackTrace();
-        } catch (UnrecoverableEntryException e) {
-            e.printStackTrace();
-        } catch (KeyStoreException e) {
-            e.printStackTrace();
-        }
     }
 
     private void uploadImage(){
@@ -230,7 +191,6 @@ public class CustomerMainMenu extends AppCompatActivity {
             RequestBody requestBody = new MultipartBody.Builder().setType(MultipartBody.FORM)
                     .addFormDataPart("fileToUpload", imageFile.getName(), RequestBody.create(MEDIA_TYPE, imageFile))
                     .build();
-
 
             final Request request = new Request.Builder()
                     .url(url)

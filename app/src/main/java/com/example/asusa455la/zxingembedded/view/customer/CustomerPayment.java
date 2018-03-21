@@ -40,6 +40,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
@@ -51,6 +52,7 @@ import java.security.PrivateKey;
 import java.security.UnrecoverableEntryException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
+import java.sql.SQLOutput;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -68,17 +70,31 @@ public class CustomerPayment extends AppCompatActivity {
 
     private String decryptedData;
     private String digitalSignature;
+    private String digitalCertPath;
+
+    private static int totalHarga;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_customer_payment);
 
-        this.cPayButton = findViewById(R.id.cPayButton);
+        final SharedPreferences sharedPreferences = this.getSharedPreferences(getString(R.string.shared_pref_appname), Context.MODE_PRIVATE);
+
+        this.cPayButton = findViewById(R.id.cCreateQRCodeButton);
         this.cPayButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startConfirmPayment(ConfirmPayment.class);
+                Bundle bundle = new Bundle();
+                bundle.putString("digitalCertificate", digitalCertPath);
+                String firstName = (sharedPreferences.getString((getString(R.string.shared_pref_first_name)), ""));
+                String lastName = (sharedPreferences.getString((getString(R.string.shared_pref_last_name)), ""));
+                String[] splitQRCodeData = decryptedData.split(";");
+                final String orderData = splitQRCodeData[0];
+
+                bundle.putString("qrCodeData", orderData+";" + firstName + " " + lastName + ";" + totalHarga);
+
+                startPrintQRCode(CustomerPrintQRCode.class, bundle);
                 onPause();
             }
         });
@@ -121,13 +137,34 @@ public class CustomerPayment extends AppCompatActivity {
         } catch (KeyStoreException e) {
             e.printStackTrace();
         }
+/*
+        String teks = "The world is ours";
+        String folderCSR = Environment.getExternalStorageDirectory() + File.separator  + "CERT Folder";
+
+        // Create the file.
+        String commonName = sharedPreferences.getString((getString(R.string.shared_pref_email)), "");
+
+        File csrFile = new File(folderCSR, commonName + ".crt");
+
+        Certificate certificate = Cryptography.loadCertificate(csrFile);
+        String enc = Cryptography.encrypt(teks, certificate.getPublicKey());
+        String dec = Cryptography.decrypt(enc, privateKey);
+
+        System.out.println("JBJ Public Key: " + certificate.getPublicKey().toString());
+
+        Toast.makeText(getApplicationContext(), "Teks: " + teks + "\n"
+                + "enc: " + enc + "\n" + "dec: " + dec, Toast.LENGTH_SHORT).show();*/
 
         decryptedData = Cryptography.decrypt(encryptedData, privateKey);
+        /*Toast.makeText(getApplicationContext(), "Encrypted: " + encryptedData + "\n"
+                + "Digital Signature " + digitalSignature + "\n" + "Decrypted: " + decryptedData, Toast.LENGTH_SHORT).show();*/
 
-        System.out.println("Private key: " + privateKey);
 
-        System.out.println("JBJ " + encryptedData);
-        System.out.println("JBJ " + decryptedData);
+
+/*            String encoded = new String (Base64.encode(teks.getBytes("UTF-8"), Base64.DEFAULT));
+            String decoded = new String (Base64.decode(encoded.getBytes("UTF-8"), Base64.DEFAULT));
+            Toast.makeText(getApplicationContext(), "Teks: " + teks + "\n"
+                + "encoded " + encoded + "\n" + "Decoded: " + decoded, Toast.LENGTH_SHORT).show();*/
 
         String[] splitDecryptedData = decryptedData.split(";");
         final String idOrder = splitDecryptedData[0];
@@ -184,7 +221,6 @@ public class CustomerPayment extends AppCompatActivity {
             protected Map<String, String> getParams()
             {
                 Map<String, String> params = new HashMap<>();
-
                 params.put("id_order", idOrder);
                 params.put("id_customer", idCustomer);
                 return params;
@@ -199,7 +235,7 @@ public class CustomerPayment extends AppCompatActivity {
     private void displayOrder(JSONArray jsonOrder){
         try {
             JSONObject tempJSONObject = jsonOrder.getJSONObject(0);
-            String digitalCertPath = tempJSONObject.getString("digital_certificate");
+            digitalCertPath = tempJSONObject.getString("digital_certificate_merchant");
             new QRCodeVerifier(this, decryptedData, digitalSignature, jsonOrder).execute("https://qrcodepayment.ddns.net/upload/certs/"+digitalCertPath);
         } catch (JSONException e) {
             e.printStackTrace();
@@ -207,14 +243,9 @@ public class CustomerPayment extends AppCompatActivity {
 
     }
 
-    private void startConfirmPayment(Class anotherClass){
-        Intent customerPaymentIntent = this.getIntent();
-        String qrCodeData = customerPaymentIntent.getExtras().getString("QRCodeData");
-        String[] splitQRCodeData = qrCodeData.split(";");
-        final String orderData = splitQRCodeData[0];
-
+    private void startPrintQRCode(Class anotherClass, Bundle bundle){
         Intent intent = new Intent(this, anotherClass);
-        intent.putExtra("order_data", orderData);
+        intent.putExtras(bundle);
         startActivity(intent);
         finish();
     }
@@ -271,6 +302,7 @@ public class CustomerPayment extends AppCompatActivity {
         protected void onPostExecute(String file_url) {
             System.out.println("Downloaded");
             String display = "";
+            totalHarga = 0;
 
             try{
                 JSONObject tempJSONObject = jsonArray.getJSONObject(0);
@@ -293,8 +325,6 @@ public class CustomerPayment extends AppCompatActivity {
 
                     String namaMerchant = tempJSONObject.getString("nama_merchant");
                     display += "Nama Merchant: " + namaMerchant + "\n\n";
-
-                    int totalHarga = 0;
 
                     for(int i = 0; i < jsonArray.length(); i++) {
                         JSONObject itemJson = jsonArray.getJSONObject(i);

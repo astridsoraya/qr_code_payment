@@ -1,4 +1,4 @@
-package com.example.asusa455la.zxingembedded.view.merchant;
+package com.example.asusa455la.zxingembedded.view.customer;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -40,27 +40,31 @@ import java.security.cert.CertificateException;
 
 import okhttp3.OkHttpClient;
 
-public class MerchantPrintQRCode extends AppCompatActivity {
+public class CustomerPrintQRCode extends AppCompatActivity {
     private static ImageView qrCodeImageView;
-    private Button confirmCustomerButton;
+    private Button payOrderButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_merchant_print_qrcode);
+        setContentView(R.layout.activity_customer_print_qrcode);
 
-        this.qrCodeImageView = findViewById(R.id.mQRCodeView);
+        this.qrCodeImageView = findViewById(R.id.cQRCodeView);
+        this.payOrderButton = findViewById(R.id.cPayOrderButton);
 
         Intent intent = getIntent();
         Bundle extras = intent.getExtras();
         String qrCodeData = extras.getString("qrCodeData");
         String digitalCertificatePath = extras.getString("digitalCertificate");
+        System.out.println("JBJ: " + qrCodeData);
+        String[] splitQRCodeData = qrCodeData.split(";");
+        final String idOrder = splitQRCodeData[0];
 
-        this.confirmCustomerButton = findViewById(R.id.mScanQRButton);
-        this.confirmCustomerButton.setOnClickListener(new View.OnClickListener() {
+        this.payOrderButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                confirmCustomer();
+                System.out.println("JBJ: " + idOrder);
+                confirmPayment(idOrder);
             }
         });
 
@@ -71,9 +75,9 @@ public class MerchantPrintQRCode extends AppCompatActivity {
 
     }
 
-    private void confirmCustomer(){
-        Intent intent = new Intent(this, CaptureQRCode.class);
-        intent.putExtra("userType", "merchant");
+    private void confirmPayment(String idOrder){
+        Intent intent = new Intent(this, ConfirmPayment.class);
+        intent.putExtra("order_data", idOrder);
         startActivity(intent);
         this.finish();
     }
@@ -114,7 +118,6 @@ public class MerchantPrintQRCode extends AppCompatActivity {
             try (okhttp3.Response response = client.newCall(request).execute()) {
                 InputStream is = response.body().byteStream();
                 digitalCertificate = Cryptography.loadCertificate(is);
-                System.out.println("JBJ Public Key: " + digitalCertificate.getPublicKey().toString());
 
             } catch (IOException e) {
                 e.printStackTrace();

@@ -99,6 +99,10 @@
         <activity
             android:name=".view.merchant.MerchantInsertUsername"
             android:label="@string/title_activity_merchant_insert_username"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".view.customer.CustomerPrintQRCode"
+            android:label="@string/title_activity_customer_print_qrcode"
             android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 

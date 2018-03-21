@@ -135,6 +135,8 @@ public class MerchantInsertUsername extends AppCompatActivity {
     private void createQRCode(JSONObject jsonObject){
         try {
             String digitalCertificatePath = jsonObject.get("digital_certificate").toString();
+
+            Toast.makeText(getApplicationContext(), digitalCertificatePath, Toast.LENGTH_LONG).show();
             Intent thisContext = getIntent();
             String qrCodeData = thisContext.getExtras().getString("QRCodeData");
 

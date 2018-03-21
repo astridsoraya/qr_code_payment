@@ -248,6 +248,7 @@ public class Login extends AppCompatActivity{
             editor.putString(getString(R.string.shared_pref_user_type), userType);
             editor.putString(getString(R.string.shared_pref_email), jsonObject.get("email_address").toString());
             editor.putString(getString(R.string.shared_pref_handphone_number), jsonObject.get("handphone_number").toString());
+            editor.putString(getString(R.string.shared_pref_username), jsonObject.get("username").toString());
 
             if(userType.equalsIgnoreCase("merchant")){
                 editor.putString(getString(R.string.shared_pref_id_user), jsonObject.get("id_merchant").toString());

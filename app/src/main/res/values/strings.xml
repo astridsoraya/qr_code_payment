@@ -48,6 +48,7 @@
     <string name="shared_pref_last_name">sp_last_name</string>
     <string name="shared_pref_handphone_number">sp_handphone_number</string>
     <string name="shared_pref_merchant_address">sp_merchant_address</string>
+    <string name="shared_pref_username">sp_username</string>
 
     <string name="title_activity_merchant_order">Make an order</string>
     <string name="title_activity_merchant_history">Merchant\'s transaction history </string>
@@ -66,6 +67,7 @@
     <string name="title_activity_merchant_order_history">MerchantOrderHistory</string>
     <string name="title_activity_merchant_confirm_customer">MerchantConfirmCustomer</string>
     <string name="title_activity_merchant_insert_username">MerchantInsertUsername</string>
+    <string name="title_activity_customer_print_qrcode">CustomerPrintQRCode</string>
 
 </resources>
 
