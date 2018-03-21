@@ -64,6 +64,8 @@
     <string name="title_activity_add_item">Add item</string>
     <string name="title_activity_customer_order_history">CustomerOrderHistory</string>
     <string name="title_activity_merchant_order_history">MerchantOrderHistory</string>
+    <string name="title_activity_merchant_confirm_customer">MerchantConfirmCustomer</string>
+    <string name="title_activity_merchant_insert_username">MerchantInsertUsername</string>
 
 </resources>
 

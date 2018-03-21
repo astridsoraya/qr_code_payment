@@ -4,7 +4,6 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -25,15 +24,11 @@ import com.android.volley.VolleyLog;
 import com.android.volley.toolbox.StringRequest;
 import com.example.asusa455la.zxingembedded.R;
 import com.example.asusa455la.zxingembedded.model.Item;
-import com.example.asusa455la.zxingembedded.model.Order;
-import com.example.asusa455la.zxingembedded.model.OrderItems;
 import com.example.asusa455la.zxingembedded.utility.AppController;
 import com.example.asusa455la.zxingembedded.utility.AppDatabase;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -41,7 +36,7 @@ import java.util.List;
 import java.util.Map;
 
 public class MerchantOrder extends AppCompatActivity {
-    private static String urlOrderItems = "https://qrcodepayment.crabdance.com/add_order_items.php";
+    private static String urlOrderItems = "https://qrcodepayment.ddns.net/add_order_items.php";
 
     private AppDatabase appDatabase;
 
@@ -188,7 +183,7 @@ public class MerchantOrder extends AppCompatActivity {
 
             /*}*/
 
-            Intent intent = new Intent(this, MerchantPrintQRCode.class);
+            Intent intent = new Intent(this, MerchantInsertUsername.class);
             intent.putExtra("QRCodeData", idOrder+";"+getNamaMerchant()+";" + totalHarga);
             this.onPause();
             startActivity(intent);

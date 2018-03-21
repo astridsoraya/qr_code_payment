@@ -145,14 +145,14 @@ public class Cryptography{
         return verification;
     }
 
-/*    public static String encrypt(String plaintext, PublicKey publicKey)
+    public static String encrypt(String plaintext, PublicKey publicKey)
     {
         String encryptedText = "";
         try {
-            Cipher cipher = Cipher.getInstance("RSA");
+            Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
             cipher.init(Cipher.ENCRYPT_MODE, publicKey);
             byte[] encryptedBytes = cipher.doFinal(plaintext.getBytes("UTF-8"));
-            encryptedText = Base64.encodeToString(encryptedBytes, Base64.DEFAULT);
+            encryptedText = new String(Base64.encode(encryptedBytes, Base64.DEFAULT));
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         } catch (InvalidKeyException e) {
@@ -165,7 +165,9 @@ public class Cryptography{
             e.printStackTrace();
         } catch (IllegalBlockSizeException e) {
             e.printStackTrace();
-        }
+        } /*catch (NoSuchProviderException e) {
+            e.printStackTrace();
+        }*/
 
         return encryptedText;
     }
@@ -174,10 +176,10 @@ public class Cryptography{
         String decryptedText = "";
 
         try {
-            Cipher cipher = Cipher.getInstance("RSA");
+            Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
             cipher.init(Cipher.DECRYPT_MODE, privateKey);
             byte[] decryptedBytes = Base64.decode(ciphertext.getBytes("UTF-8"), Base64.DEFAULT);
-            decryptedText = new String (cipher.doFinal(decryptedBytes));
+            decryptedText = new String (cipher.doFinal(decryptedBytes), "UTF-8");
         } catch (InvalidKeyException e) {
             e.printStackTrace();
         } catch (NoSuchAlgorithmException e) {
@@ -190,10 +192,12 @@ public class Cryptography{
             e.printStackTrace();
         } catch (IllegalBlockSizeException e) {
             e.printStackTrace();
-        }
+        } /*catch (NoSuchProviderException e) {
+            e.printStackTrace();
+        }*/
 
         return decryptedText;
-    }*/
+    }
 
     private static KeyPair generateKeyPair(Context context, String commonName){
         PrivateKey privateKey;

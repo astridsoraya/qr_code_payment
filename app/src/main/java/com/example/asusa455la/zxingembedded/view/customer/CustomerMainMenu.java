@@ -15,6 +15,7 @@ import android.os.Looper;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Base64;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -28,24 +29,28 @@ import android.widget.Toast;
 import com.example.asusa455la.zxingembedded.R;
 import com.example.asusa455la.zxingembedded.utility.AppDatabase;
 import com.example.asusa455la.zxingembedded.utility.Cryptography;
+import com.example.asusa455la.zxingembedded.view.intro.CaptureQRCode;
 import com.example.asusa455la.zxingembedded.view.intro.Login;
 
-import org.bouncycastle.operator.OperatorCreationException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
-import java.security.Key;
+import java.security.InvalidKeyException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.security.UnrecoverableEntryException;
-import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
-import java.security.interfaces.RSAPrivateKey;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -102,7 +107,9 @@ public class CustomerMainMenu extends AppCompatActivity {
 
             @Override
             public void onClick(View view) {
-                showOtherActivity(CaptureQRCode.class);
+            Bundle bundle = new Bundle();
+            bundle.putString("userType", "customer");
+            showOtherActivityWithData(CaptureQRCode.class, bundle);
             }
         });
 
@@ -119,7 +126,8 @@ public class CustomerMainMenu extends AppCompatActivity {
 
             @Override
             public void onClick(View view) {
-                uploadImage();
+                testCrypto();
+                //uploadImage();
             }
         });
 
@@ -134,6 +142,45 @@ public class CustomerMainMenu extends AppCompatActivity {
                 finishActivity();
             }
         });
+    }
+
+    private void testCrypto(){
+        try {
+            String email_address = sharedPreferences.getString(getString(R.string.shared_pref_email), "");
+            KeyStore keyStore = KeyStore.getInstance("AndroidKeyStore");
+            keyStore.load(null);
+
+            KeyStore.Entry entry = keyStore.getEntry(email_address, null);
+
+            KeyStore.PrivateKeyEntry privateKeyEntry = (KeyStore.PrivateKeyEntry) entry;
+            PrivateKey privateKey = privateKeyEntry.getPrivateKey();
+
+            String folderCERT = Environment.getExternalStorageDirectory() + File.separator  + "CERT Folder";
+            File certFile = new File(folderCERT, email_address + ".crt");
+            Certificate certificate = Cryptography.loadCertificate(certFile);
+            PublicKey publicKey = certificate.getPublicKey();
+
+            String plaintext = "The world is ours.";
+
+            String encryptedText = Cryptography.encrypt(plaintext, publicKey);
+            String decryptedText = Cryptography.decrypt(encryptedText, privateKey);
+
+            String encrypted = "Encrypted: " + encryptedText;
+            String decrypted = "Decrypted: " + decryptedText;
+
+            Toast.makeText(getApplicationContext(), plaintext+"\n"+encrypted+"\n"+decrypted, Toast.LENGTH_LONG).show();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (CertificateException e) {
+            e.printStackTrace();
+        } catch (UnrecoverableEntryException e) {
+            e.printStackTrace();
+        } catch (KeyStoreException e) {
+            e.printStackTrace();
+        }
     }
 
     private void uploadImage(){
@@ -250,6 +297,12 @@ public class CustomerMainMenu extends AppCompatActivity {
 
     private void showOtherActivity(Class otherActivity){
         Intent intent = new Intent(this, otherActivity);
+        startActivity(intent);
+    }
+
+    private void showOtherActivityWithData(Class otherActivity, Bundle bundle){
+        Intent intent = new Intent(this, otherActivity);
+        intent.putExtras(bundle);
         startActivity(intent);
     }
 

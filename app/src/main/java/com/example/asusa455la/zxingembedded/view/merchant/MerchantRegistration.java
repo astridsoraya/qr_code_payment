@@ -28,7 +28,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class MerchantRegistration extends AppCompatActivity {
-    private static String urlRegister = "https://qrcodepayment.crabdance.com/register.php";
+    private static String urlRegister = "https://qrcodepayment.ddns.net/register.php";
 
     private EditText mMerchantNameEditText;
     private EditText mEmailAddressEditText;

@@ -5,8 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context="com.example.asusa455la.zxingembedded.view.customer.ConfirmPayment"
-    tools:showIn="@layout/activity_confirm_payment">
+    tools:context="com.example.asusa455la.zxingembedded.view.customer.ConfirmPayment">
 
     <TextView
         android:id="@+id/textView13"

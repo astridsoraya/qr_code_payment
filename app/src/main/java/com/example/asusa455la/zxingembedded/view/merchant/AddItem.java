@@ -29,7 +29,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class AddItem extends AppCompatActivity {
-    private static String urlListItem = "https://qrcodepayment.crabdance.com/add_item.php";
+    private static String urlListItem = "https://qrcodepayment.ddns.net/add_item.php";
 
     private AppDatabase appDatabase;
 

@@ -77,7 +77,7 @@
             android:label="@string/title_activity_create_wallet"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".view.customer.CaptureQRCode"
+            android:name=".view.intro.CaptureQRCode"
             android:label="@string/title_activity_capture_qrcode"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
@@ -92,6 +92,14 @@
             android:name=".view.merchant.MerchantOrderHistory"
             android:label="@string/title_activity_merchant_order_history"
             android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".view.merchant.MerchantConfirmCustomer"
+            android:label="@string/title_activity_merchant_confirm_customer"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".view.merchant.MerchantInsertUsername"
+            android:label="@string/title_activity_merchant_insert_username"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
 </manifest>
