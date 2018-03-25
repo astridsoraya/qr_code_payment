@@ -149,7 +149,6 @@ public class MerchantOrder extends AppCompatActivity {
 
                     for(int i = 0; i < quantityEachItem.length; i++){
                         if(quantityEachItem[i] != 0){
-                            params.put("id_merchant", getIDMerchant());
                             params.put(String.format("id_barang_%s",counter), itemsList.get(i).getIdBarang());
                             params.put(String.format("kuantitas_%s",counter), quantityEachItem[i]+"");
 
@@ -167,39 +166,16 @@ public class MerchantOrder extends AppCompatActivity {
     }
 
     private void showQRCodePayment(String idOrder){
-            /*for(int i = 0; i < items.length(); i++) {*/
-                //JSONObject itemJson = items.getJSONObject(0);
-/*
-
-                String idBarang = itemJson.getString("id_barang");
-                int kuantitas = Integer.parseInt(itemJson.getString("kuantitas"));
-                String waktuOrder = itemJson.getString("waktu_order");*/
-
-                //orderListString += String.format("%s", idOrder);
-
-/*                if(i < items.length() - 1){
-                    orderListString += "|";
-                }*/
-
-            /*}*/
-
             Intent intent = new Intent(this, MerchantInsertUsername.class);
-            intent.putExtra("QRCodeData", idOrder+";"+getNamaMerchant()+";" + totalHarga);
+            intent.putExtra("QRCodeData", idOrder+";"+getUsernameMerchant()+";" + totalHarga);
             this.onPause();
             startActivity(intent);
-
     }
 
-    private String getIDMerchant(){
+    private String getUsernameMerchant(){
         SharedPreferences sharedPreferences = this.getSharedPreferences(getString(R.string.shared_pref_appname), Context.MODE_PRIVATE);
-        String idMerchant = sharedPreferences.getString(getString(R.string.shared_pref_id_user), "");
-        return idMerchant;
-    }
-
-    private String getNamaMerchant(){
-        SharedPreferences sharedPreferences = this.getSharedPreferences(getString(R.string.shared_pref_appname), Context.MODE_PRIVATE);
-        String namaMerchant = sharedPreferences.getString(getString(R.string.shared_pref_merchant_name), "");
-        return namaMerchant;
+        String usernameMerchant = sharedPreferences.getString(getString(R.string.shared_pref_username), "");
+        return usernameMerchant;
     }
 
     private void showItemsList(){

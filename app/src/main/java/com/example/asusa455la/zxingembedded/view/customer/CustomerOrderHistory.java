@@ -6,6 +6,8 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -28,6 +30,7 @@ import com.android.volley.toolbox.StringRequest;
 import com.example.asusa455la.zxingembedded.R;
 import com.example.asusa455la.zxingembedded.model.Item;
 import com.example.asusa455la.zxingembedded.utility.AppController;
+import com.example.asusa455la.zxingembedded.utility.Cryptography;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -54,8 +57,11 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManagerFactory;
 
+import okhttp3.OkHttpClient;
+
 public class CustomerOrderHistory extends ListActivity {
     private static String urlListOrder = "https://qrcodepayment.ddns.net/list_order.php";
+    private static String urlReconstruct = "https://qrcodepayment.ddns.net/reconstruct.php";
 
     private ArrayAdapter<String> orderAdapter;
     private ListView orderListView;
@@ -63,13 +69,15 @@ public class CustomerOrderHistory extends ListActivity {
     private ArrayList<JSONObject> orderJSONArrayList;
     private ArrayList<String> orderStringArrayList;
 
+    private Bitmap reconstructedSecretImage;
+    private Bitmap reconstructedAuthImage;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_customer_order_history);
 
         this.orderJSONArrayList = new ArrayList<JSONObject>();
-        this.orderStringArrayList = new ArrayList<String>();
 
         retrieveOrdersJSON();
 
@@ -77,20 +85,8 @@ public class CustomerOrderHistory extends ListActivity {
         this.getListView().setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                    JSONObject orderJSON = orderJSONArrayList.get(i);
-                    try {
-                        String[] splitNamaBarang = orderJSON.getString("nama_barang").split(";");
-                        String[] splitHarga = orderJSON.getString("harga").split(";");
-                        String[] splitKuantitas = orderJSON.getString("kuantitas").split(";");
-
-                        String res = "";
-
-                        for(int j = 0; j < splitNamaBarang.length; j++){
-                            res += splitNamaBarang[j] + ": " + splitHarga[j] + " x" + splitKuantitas[j] + "\n";
-                        }
-
+                    retrieveQRCode(i);
                         AlertDialog.Builder builder1 = new AlertDialog.Builder(context);
-                        builder1.setMessage(res);
                         builder1.setCancelable(true);
 
                         builder1.setPositiveButton(
@@ -102,12 +98,107 @@ public class CustomerOrderHistory extends ListActivity {
                                 });
                         AlertDialog alert11 = builder1.create();
                         alert11.show();
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
 
                 }
         });
+    }
+
+    private void retrieveQRCode(final int position){
+        // Tag used to cancel the request
+        String tag_string = "string_req";
+
+        // Show a progress spinner, and kick off a background task to
+        // perform the user login attempt.
+        final ProgressDialog pDialog = new ProgressDialog(this);
+        pDialog.setMessage("Loading orders...");
+        pDialog.show();
+
+        StringRequest strRequest = new StringRequest(Request.Method.POST, urlReconstruct,
+                new Response.Listener<String>()
+                {
+                    @Override
+                    public void onResponse(String response)
+                    {
+                        Log.d(AppController.TAG, response.toString());
+                        String messageResponse = "";
+                        String notificationSuccess = "";
+                        String secret_image = "";
+                        String auth_image = "";
+
+                        JSONObject jsonObject = null;
+                        try {
+                            jsonObject = new JSONObject(response);
+                            notificationSuccess = jsonObject.get("success").toString();
+                            messageResponse = jsonObject.get("message").toString();
+                            secret_image = jsonObject.get("reconstructed_secret_image").toString();
+                            auth_image = jsonObject.get("reconstructed_auth_image").toString();
+
+                            OkHttpClient client = new OkHttpClient();
+
+                            okhttp3.Request request = new okhttp3.Request.Builder()
+                                    .url(secret_image)
+                                    .build();
+
+                            try (okhttp3.Response secretImageResponse = client.newCall(request).execute()) {
+                                InputStream inputStream = secretImageResponse.body().byteStream();
+                                reconstructedSecretImage = BitmapFactory.decodeStream(inputStream);
+
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+
+                            request = new okhttp3.Request.Builder()
+                                    .url(auth_image)
+                                    .build();
+
+                            try (okhttp3.Response authImageResponse = client.newCall(request).execute()) {
+                                InputStream inputStream = authImageResponse.body().byteStream();
+                                reconstructedAuthImage = BitmapFactory.decodeStream(inputStream);
+
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+
+                        if(notificationSuccess.equalsIgnoreCase("1")){
+                            pDialog.hide();
+                        }
+                        else{
+                            pDialog.hide();
+                        }
+                    }
+                },
+                new Response.ErrorListener()
+                {
+                    @Override
+                    public void onErrorResponse(VolleyError error)
+                    {
+                        VolleyLog.d(AppController.TAG, "Error: " + error.getMessage());
+                        Toast.makeText(getApplicationContext(), "System failed to login", Toast.LENGTH_SHORT).show();
+                        pDialog.hide();
+                    }
+                })
+        {
+            @Override
+            protected Map<String, String> getParams()
+            {
+                Map<String, String> params = new HashMap<String, String>();
+                JSONObject tempJSONObject = orderJSONArrayList.get(position);
+                try {
+                    String idOrder = tempJSONObject.getString("id_order");
+                    params.put("id_order", (idOrder));
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                return params;
+            }
+        };
+
+        // Adding request to request queue
+        AppController.getInstance().addToRequestQueue(strRequest, tag_string);
     }
 
     private void retrieveOrdersJSON(){
@@ -119,20 +210,6 @@ public class CustomerOrderHistory extends ListActivity {
         final ProgressDialog pDialog = new ProgressDialog(this);
         pDialog.setMessage("Loading orders...");
         pDialog.show();
-
-        /*HurlStack hurlStack = new HurlStack() {
-            @Override
-            protected HttpURLConnection createConnection(URL url) throws IOException {
-                HttpsURLConnection httpsURLConnection = (HttpsURLConnection) super.createConnection(url);
-                try {
-                    httpsURLConnection.setSSLSocketFactory(getSSLSocketFactory());
-                    httpsURLConnection.setHostnameVerifier(getHostnameVerifier());
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                return httpsURLConnection;
-            }
-        };*/
 
         StringRequest strRequest = new StringRequest(Request.Method.POST, urlListOrder,
                 new Response.Listener<String>()

@@ -155,12 +155,16 @@ public class MerchantPrintQRCode extends AppCompatActivity {
                 KeyStore.PrivateKeyEntry privateKeyEntry = (KeyStore.PrivateKeyEntry) entry;
                 PrivateKey privateKey = privateKeyEntry.getPrivateKey();
 
-                BitMatrix bitMatrix = multiFormatWriter.encode(Cryptography.encrypt(qrCodeData, digitalCertificate.getPublicKey())+";"
-                                +Cryptography.getDigitalSignature(qrCodeData, privateKey), BarcodeFormat.QR_CODE,
+                String qrcode = Cryptography.encrypt(qrCodeData, digitalCertificate.getPublicKey())+";"
+                        +Cryptography.getDigitalSignature(qrCodeData, privateKey);
+
+                BitMatrix bitMatrix = multiFormatWriter.encode(qrcode, BarcodeFormat.QR_CODE,
                         qrCodeImageView.getWidth(), qrCodeImageView.getHeight());
                 BarcodeEncoder barcodeEncoder = new BarcodeEncoder();
                 bitmap = barcodeEncoder.createBitmap(bitMatrix);
                 qrCodeImageView.setImageBitmap(bitmap);
+
+                System.out.println("Dean Merchant: " + qrcode);
             } catch (WriterException e) {
                 e.printStackTrace();
             } catch (IOException e) {

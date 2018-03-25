@@ -86,7 +86,6 @@ public class MerchantConfirmCustomer extends AppCompatActivity {
         digitalSignature = splitQRCodeData[1];
 
         SharedPreferences sharedPreferences = getSharedPreferences(getString(R.string.shared_pref_appname), Context.MODE_PRIVATE);
-        String idMerchant = sharedPreferences.getString(getString(R.string.shared_pref_id_user), "");
         String email_address = sharedPreferences.getString(getString(R.string.shared_pref_email), "");
         PrivateKey privateKey = null;
 
@@ -114,13 +113,16 @@ public class MerchantConfirmCustomer extends AppCompatActivity {
         decryptedData = Cryptography.decrypt(encryptedData, privateKey);
         String[] splitDecryptedData = decryptedData.split(";");
         final String idOrder = splitDecryptedData[0];
+        String usernameCustomer = splitDecryptedData[1];
 
-        checkOrderExist(idOrder, idMerchant);
+        System.out.println("Monsta decrypted data dari merchant: " + decryptedData);
+
+        checkOrderExist(idOrder, usernameCustomer);
     }
 
 
 
-    private void checkOrderExist(final String idOrder, final String idMerchant){
+    private void checkOrderExist(final String idOrder, final String usernameCustomer){
         String tag_string = "string_req";
 
         final ProgressDialog pDialog = new ProgressDialog(this);
@@ -169,7 +171,7 @@ public class MerchantConfirmCustomer extends AppCompatActivity {
                 Map<String, String> params = new HashMap<>();
 
                 params.put("id_order", idOrder);
-                params.put("id_merchant", idMerchant);
+                params.put("username_customer", usernameCustomer);
                 return params;
             }
         };

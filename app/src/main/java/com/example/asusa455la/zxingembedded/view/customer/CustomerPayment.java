@@ -87,12 +87,11 @@ public class CustomerPayment extends AppCompatActivity {
             public void onClick(View view) {
                 Bundle bundle = new Bundle();
                 bundle.putString("digitalCertificate", digitalCertPath);
-                String firstName = (sharedPreferences.getString((getString(R.string.shared_pref_first_name)), ""));
-                String lastName = (sharedPreferences.getString((getString(R.string.shared_pref_last_name)), ""));
+                String usernameCustomer = (sharedPreferences.getString((getString(R.string.shared_pref_username)), ""));
                 String[] splitQRCodeData = decryptedData.split(";");
                 final String orderData = splitQRCodeData[0];
 
-                bundle.putString("qrCodeData", orderData+";" + firstName + " " + lastName + ";" + totalHarga);
+                bundle.putString("qrCodeData", orderData+";" + usernameCustomer + ";" + totalHarga);
 
                 startPrintQRCode(CustomerPrintQRCode.class, bundle);
                 onPause();
@@ -113,7 +112,6 @@ public class CustomerPayment extends AppCompatActivity {
         digitalSignature = splitQRCodeData[1];
 
         SharedPreferences sharedPreferences = getSharedPreferences(getString(R.string.shared_pref_appname), Context.MODE_PRIVATE);
-        String idCustomer = sharedPreferences.getString(getString(R.string.shared_pref_id_user), "");
         String email_address = sharedPreferences.getString(getString(R.string.shared_pref_email), "");
         PrivateKey privateKey = null;
 
@@ -137,44 +135,20 @@ public class CustomerPayment extends AppCompatActivity {
         } catch (KeyStoreException e) {
             e.printStackTrace();
         }
-/*
-        String teks = "The world is ours";
-        String folderCSR = Environment.getExternalStorageDirectory() + File.separator  + "CERT Folder";
-
-        // Create the file.
-        String commonName = sharedPreferences.getString((getString(R.string.shared_pref_email)), "");
-
-        File csrFile = new File(folderCSR, commonName + ".crt");
-
-        Certificate certificate = Cryptography.loadCertificate(csrFile);
-        String enc = Cryptography.encrypt(teks, certificate.getPublicKey());
-        String dec = Cryptography.decrypt(enc, privateKey);
-
-        System.out.println("JBJ Public Key: " + certificate.getPublicKey().toString());
-
-        Toast.makeText(getApplicationContext(), "Teks: " + teks + "\n"
-                + "enc: " + enc + "\n" + "dec: " + dec, Toast.LENGTH_SHORT).show();*/
 
         decryptedData = Cryptography.decrypt(encryptedData, privateKey);
-        /*Toast.makeText(getApplicationContext(), "Encrypted: " + encryptedData + "\n"
-                + "Digital Signature " + digitalSignature + "\n" + "Decrypted: " + decryptedData, Toast.LENGTH_SHORT).show();*/
-
-
-
-/*            String encoded = new String (Base64.encode(teks.getBytes("UTF-8"), Base64.DEFAULT));
-            String decoded = new String (Base64.decode(encoded.getBytes("UTF-8"), Base64.DEFAULT));
-            Toast.makeText(getApplicationContext(), "Teks: " + teks + "\n"
-                + "encoded " + encoded + "\n" + "Decoded: " + decoded, Toast.LENGTH_SHORT).show();*/
+        System.out.println("Monsta decrypted data dari merchant: " + decryptedData);
 
         String[] splitDecryptedData = decryptedData.split(";");
         final String idOrder = splitDecryptedData[0];
+        final String usernameMerchant = splitDecryptedData[1];
 
-        checkOrderExist(idOrder, idCustomer);
+        checkOrderExist(idOrder, usernameMerchant);
     }
 
 
 
-    private void checkOrderExist(final String idOrder, final String idCustomer){
+    private void checkOrderExist(final String idOrder, final String usernameMerchant){
         String tag_string = "string_req";
 
         final ProgressDialog pDialog = new ProgressDialog(this);
@@ -222,7 +196,7 @@ public class CustomerPayment extends AppCompatActivity {
             {
                 Map<String, String> params = new HashMap<>();
                 params.put("id_order", idOrder);
-                params.put("id_customer", idCustomer);
+                params.put("username_merchant", usernameMerchant);
                 return params;
             }
         };
@@ -352,11 +326,11 @@ public class CustomerPayment extends AppCompatActivity {
         private boolean verifyQRCodeData(String decryptedData, String digitalSignature, Certificate certificate){
             String[] splitQRCodeData = decryptedData.split(";");
             final String idOrder = splitQRCodeData[0];
-            final String namaMerchant = splitQRCodeData[1];
+            final String merchantUsername = splitQRCodeData[1];
             final String totalHarga = splitQRCodeData[2];
 
             return Cryptography.verifyDigitalSignature(idOrder+";"
-                    +namaMerchant+ ";" + totalHarga, digitalSignature, certificate.getPublicKey());
+                    +merchantUsername+ ";" + totalHarga, digitalSignature, certificate.getPublicKey());
         }
     }
 }

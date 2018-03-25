@@ -43,6 +43,8 @@ public class CaptureQRCode extends AppCompatActivity {
             }
 
             intentPayment.putExtra("qrCodeData", capturedData);
+            System.out.println("JBJ QR Code Data " + userType + " " + capturedData);
+
             startActivity(intentPayment);
             this.finish();
         }
