@@ -70,7 +70,6 @@ public class CustomerMainMenu extends AppCompatActivity {
     private Button cProfileButton;
     private Button cPaymentButton;
     private Button cPaymentHistoryButton;
-    private Button cUploadTestButton;
     private Button cLogoutButton;
 
     @Override
@@ -121,16 +120,6 @@ public class CustomerMainMenu extends AppCompatActivity {
             }
         });
 
-        this.cUploadTestButton = (Button) findViewById(R.id.cUploadPicButton);
-        this.cUploadTestButton.setOnClickListener(new View.OnClickListener(){
-
-            @Override
-            public void onClick(View view) {
-                //testCrypto();
-                uploadImage();
-            }
-        });
-
         this.cLogoutButton = (Button) findViewById(R.id.cLogOutButton);
         this.cLogoutButton.setOnClickListener(new View.OnClickListener(){
             @Override
@@ -142,117 +131,6 @@ public class CustomerMainMenu extends AppCompatActivity {
                 finishActivity();
             }
         });
-    }
-
-    private void uploadImage(){
-        Intent galleryIntent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-        startActivityForResult(galleryIntent, PICK_IMAGE);
-    }
-
-    private String getRealPathFromURI(Uri contentUri) {
-        Cursor cursor = null;
-        try {
-            String[] proj = {MediaStore.Images.Media.DATA};
-            cursor = getContentResolver().query(contentUri, proj, null, null,
-                    null);
-            int column_index = cursor
-                    .getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
-            cursor.moveToFirst();
-            return cursor.getString(column_index);
-        } finally {
-            if (cursor != null) {
-                cursor.close();
-            }
-        }
-    }
-
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == RESULT_OK && requestCode == PICK_IMAGE) {
-
-            final Uri imageUri = data.getData();
-            String imagePath = "";
-            if (data.toString().contains("content:")) {
-                imagePath = getRealPathFromURI(imageUri);
-            } else if (data.toString().contains("file:")) {
-                imagePath = imageUri.getPath();
-            } else {
-                imagePath = null;
-            }
-
-            File imageFile = new File(imagePath);
-            String responseString = "";
-
-            String url = "https://qrcodepayment.com:8080/post_image.php";
-
-            final MediaType MEDIA_TYPE = imageUri.getPath().endsWith("png") ?
-                    MediaType.parse("image/png") : MediaType.parse("image/jpeg");
-
-            RequestBody requestBody = new MultipartBody.Builder().setType(MultipartBody.FORM)
-                    .addFormDataPart("fileToUpload", imageFile.getName(), RequestBody.create(MEDIA_TYPE, imageFile))
-                    .build();
-
-            final Request request = new Request.Builder()
-                    .url(url)
-                    .post(requestBody)
-                    .build();
-
-            final OkHttpClient client = new OkHttpClient();
-            client.newCall(request).enqueue(new Callback() {
-                @Override
-                public void onFailure(Call call, IOException e) {
-                    e.printStackTrace();
-                }
-
-                @Override
-                public void onResponse(Call call, Response response) throws IOException {
-                    String jsonData = response.body().string();
-                    try {
-                        System.out.println(jsonData);
-                        JSONObject jsonObject = new JSONObject(jsonData);
-                        final String success = jsonObject.getString("success");
-                        final String message = jsonObject.getString("message");
-
-                        new Handler(Looper.getMainLooper()).post(new Runnable() {
-
-                            @Override
-                            public void run() {
-                                if(success.equals("1")){
-                                    Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
-
-                                    Dialog builder = new Dialog(getContext());
-                                    builder.requestWindowFeature(Window.FEATURE_NO_TITLE);
-                                    builder.getWindow().setBackgroundDrawable(
-                                            new ColorDrawable(android.graphics.Color.TRANSPARENT));
-                                    builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
-                                        @Override
-                                        public void onDismiss(DialogInterface dialogInterface) {
-                                            //nothing;
-                                        }
-                                    });
-
-                                    ImageView imageView = new ImageView(getContext());
-                                    imageView.setImageURI(imageUri);
-                                    builder.addContentView(imageView, new RelativeLayout.LayoutParams(
-                                            ViewGroup.LayoutParams.MATCH_PARENT,
-                                            ViewGroup.LayoutParams.MATCH_PARENT));
-                                    builder.show();
-                                }
-                                else{
-                                    Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
-                                }
-                            }
-                        });
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
-            });
-        }
-    }
-
-    private Context getContext(){
-        return this;
     }
 
     private void showOtherActivity(Class otherActivity){

@@ -61,16 +61,12 @@ import okhttp3.OkHttpClient;
 
 public class CustomerOrderHistory extends ListActivity {
     private static String urlListOrder = "https://qrcodepayment.ddns.net/list_order.php";
-    private static String urlReconstruct = "https://qrcodepayment.ddns.net/reconstruct.php";
 
     private ArrayAdapter<String> orderAdapter;
     private ListView orderListView;
 
     private ArrayList<JSONObject> orderJSONArrayList;
     private ArrayList<String> orderStringArrayList;
-
-    private Bitmap reconstructedSecretImage;
-    private Bitmap reconstructedAuthImage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,125 +76,6 @@ public class CustomerOrderHistory extends ListActivity {
         this.orderJSONArrayList = new ArrayList<JSONObject>();
 
         retrieveOrdersJSON();
-
-        final Context context = this;
-        this.getListView().setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                    retrieveQRCode(i);
-                        AlertDialog.Builder builder1 = new AlertDialog.Builder(context);
-                        builder1.setCancelable(true);
-
-                        builder1.setPositiveButton(
-                                "OK",
-                                new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface dialog, int id) {
-                                        dialog.cancel();
-                                    }
-                                });
-                        AlertDialog alert11 = builder1.create();
-                        alert11.show();
-
-                }
-        });
-    }
-
-    private void retrieveQRCode(final int position){
-        // Tag used to cancel the request
-        String tag_string = "string_req";
-
-        // Show a progress spinner, and kick off a background task to
-        // perform the user login attempt.
-        final ProgressDialog pDialog = new ProgressDialog(this);
-        pDialog.setMessage("Loading orders...");
-        pDialog.show();
-
-        StringRequest strRequest = new StringRequest(Request.Method.POST, urlReconstruct,
-                new Response.Listener<String>()
-                {
-                    @Override
-                    public void onResponse(String response)
-                    {
-                        Log.d(AppController.TAG, response.toString());
-                        String messageResponse = "";
-                        String notificationSuccess = "";
-                        String secret_image = "";
-                        String auth_image = "";
-
-                        JSONObject jsonObject = null;
-                        try {
-                            jsonObject = new JSONObject(response);
-                            notificationSuccess = jsonObject.get("success").toString();
-                            messageResponse = jsonObject.get("message").toString();
-                            secret_image = jsonObject.get("reconstructed_secret_image").toString();
-                            auth_image = jsonObject.get("reconstructed_auth_image").toString();
-
-                            OkHttpClient client = new OkHttpClient();
-
-                            okhttp3.Request request = new okhttp3.Request.Builder()
-                                    .url(secret_image)
-                                    .build();
-
-                            try (okhttp3.Response secretImageResponse = client.newCall(request).execute()) {
-                                InputStream inputStream = secretImageResponse.body().byteStream();
-                                reconstructedSecretImage = BitmapFactory.decodeStream(inputStream);
-
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-
-                            request = new okhttp3.Request.Builder()
-                                    .url(auth_image)
-                                    .build();
-
-                            try (okhttp3.Response authImageResponse = client.newCall(request).execute()) {
-                                InputStream inputStream = authImageResponse.body().byteStream();
-                                reconstructedAuthImage = BitmapFactory.decodeStream(inputStream);
-
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-
-                        if(notificationSuccess.equalsIgnoreCase("1")){
-                            pDialog.hide();
-                        }
-                        else{
-                            pDialog.hide();
-                        }
-                    }
-                },
-                new Response.ErrorListener()
-                {
-                    @Override
-                    public void onErrorResponse(VolleyError error)
-                    {
-                        VolleyLog.d(AppController.TAG, "Error: " + error.getMessage());
-                        Toast.makeText(getApplicationContext(), "System failed to login", Toast.LENGTH_SHORT).show();
-                        pDialog.hide();
-                    }
-                })
-        {
-            @Override
-            protected Map<String, String> getParams()
-            {
-                Map<String, String> params = new HashMap<String, String>();
-                JSONObject tempJSONObject = orderJSONArrayList.get(position);
-                try {
-                    String idOrder = tempJSONObject.getString("id_order");
-                    params.put("id_order", (idOrder));
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                return params;
-            }
-        };
-
-        // Adding request to request queue
-        AppController.getInstance().addToRequestQueue(strRequest, tag_string);
     }
 
     private void retrieveOrdersJSON(){
@@ -260,46 +137,6 @@ public class CustomerOrderHistory extends ListActivity {
         // Adding request to request queue
         AppController.getInstance().addToRequestQueue(strRequest, tag_string);
     }
-/*
-    // Let's assume your server app is hosting inside a server machine
-    // which has a server certificate in which "Issued to" is "localhost",for example.
-    // Then, inside verify method you can verify "localhost".
-    // If not, you can temporarily return true
-    private HostnameVerifier getHostnameVerifier() {
-        return new HostnameVerifier() {
-            @Override
-            public boolean verify(String hostname, SSLSession session) {
-                //return true; // verify always returns true, which could cause insecure network traffic due to trusting TLS/SSL server certificates for wrong hostnames
-                HostnameVerifier hv = HttpsURLConnection.getDefaultHostnameVerifier();
-                return hv.verify("localhost", session);
-            }
-        };
-    }*/
-
-   /* private SSLSocketFactory getSSLSocketFactory()
-            throws CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException, KeyManagementException {
-        CertificateFactory cf = CertificateFactory.getInstance("X.509");
-        InputStream caInput = getResources().openRawResource(R.raw.my_cert); // this cert file stored in \app\src\main\res\raw folder path
-
-        Certificate ca = cf.generateCertificate(caInput);
-        caInput.close();
-
-        KeyStore keyStore = KeyStore.getInstance("BKS");
-        keyStore.load(null, null);
-        keyStore.setCertificateEntry("ca", ca);
-
-        String tmfAlgorithm = TrustManagerFactory.getDefaultAlgorithm();
-        TrustManagerFactory tmf = TrustManagerFactory.getInstance(tmfAlgorithm);
-        tmf.init(keyStore);
-
-        TrustManager[] wrappedTrustManagers = getWrappedTrustManagers(tmf.getTrustManagers());
-
-        SSLContext sslContext = SSLContext.getInstance("TLS");
-        sslContext.init(null, wrappedTrustManagers, null);
-
-        return sslContext.getSocketFactory();
-    }*/
-
 
     private void addRetrievedOrders(JSONArray orders){
         try {

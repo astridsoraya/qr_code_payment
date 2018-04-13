@@ -68,6 +68,7 @@
     <string name="title_activity_merchant_confirm_customer">MerchantConfirmCustomer</string>
     <string name="title_activity_merchant_insert_username">MerchantInsertUsername</string>
     <string name="title_activity_customer_print_qrcode">CustomerPrintQRCode</string>
+    <string name="title_activity_browse_merchant">BrowseMerchant</string>
 
 </resources>
 

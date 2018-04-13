@@ -6,12 +6,12 @@
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context="com.example.asusa455la.zxingembedded.view.customer.CustomerMainMenu"
-    tools:layout_editor_absoluteY="81dp">
+    tools:layout_editor_absoluteY="25dp">
 
 
     <android.support.design.widget.AppBarLayout
-        android:layout_height="wrap_content"
         android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:theme="@style/AppTheme.AppBarOverlay">
 
         <android.support.v7.widget.Toolbar
@@ -25,83 +25,47 @@
 
     <Button
         android:id="@+id/cProfileButton"
-        android:layout_width="0dp"
+        android:layout_width="260dp"
         android:layout_height="50dp"
-        android:layout_marginBottom="56dp"
-        android:layout_marginEnd="54dp"
-        android:layout_marginStart="54dp"
-        android:layout_marginTop="16dp"
         android:text="Lihat Profil"
-        app:layout_constraintBottom_toTopOf="@+id/cPaymentButton"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
         tools:layout_constraintLeft_creator="1"
         tools:layout_constraintRight_creator="1"
-        tools:layout_constraintTop_creator="1" />
+        tools:layout_constraintTop_creator="1"
+        tools:layout_editor_absoluteX="62dp"
+        tools:layout_editor_absoluteY="101dp" />
 
     <Button
         android:id="@+id/cPaymentButton"
-        android:layout_width="0dp"
+        android:layout_width="268dp"
         android:layout_height="52dp"
-        android:layout_marginBottom="60dp"
-        android:layout_marginEnd="58dp"
-        android:layout_marginStart="58dp"
         android:text="Melakukan Pembayaran"
-        app:layout_constraintBottom_toTopOf="@+id/cPaymentHistoryButton"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/cProfileButton"
         tools:layout_constraintBottom_creator="1"
         tools:layout_constraintLeft_creator="1"
         tools:layout_constraintRight_creator="1"
-        tools:layout_constraintTop_creator="1" />
+        tools:layout_constraintTop_creator="1"
+        tools:layout_editor_absoluteX="58dp"
+        tools:layout_editor_absoluteY="192dp" />
 
     <Button
         android:id="@+id/cPaymentHistoryButton"
-        android:layout_width="0dp"
+        android:layout_width="270dp"
         android:layout_height="50dp"
-        android:layout_marginEnd="57dp"
-        android:layout_marginStart="57dp"
-        android:layout_marginTop="56dp"
         android:text="Histori Pembelian"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/cPaymentButton"
         tools:layout_constraintBottom_creator="1"
         tools:layout_constraintLeft_creator="1"
         tools:layout_constraintRight_creator="1"
-        tools:layout_constraintTop_creator="1" />
+        tools:layout_constraintTop_creator="1"
+        tools:layout_editor_absoluteX="57dp"
+        tools:layout_editor_absoluteY="290dp" />
 
     <Button
         android:id="@+id/cLogOutButton"
         android:layout_width="144dp"
         android:layout_height="32dp"
-        android:layout_marginBottom="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
         android:background="@color/red"
         android:text="Log Out"
         android:textColor="@color/white"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.907" />
-
-    <Button
-        android:id="@+id/cUploadPicButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="132dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
-        android:text="Upload Image to Server"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.502"
-        app:layout_constraintStart_toStartOf="parent" />
+        tools:layout_editor_absoluteX="120dp"
+        tools:layout_editor_absoluteY="519dp" />
 
 </android.support.constraint.ConstraintLayout>
