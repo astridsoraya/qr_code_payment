@@ -93,6 +93,10 @@ public class MerchantOrder extends AppCompatActivity {
     }
 
     private void addItemsOrder(){
+        Intent intent = getIntent();
+        Bundle extras = intent.getExtras();
+        final String idOrder = extras.getString("idOrder");
+
         String tag_string = "string_req";
         final ProgressDialog pDialog = new ProgressDialog(this);
         pDialog.setMessage("Ordering items...");
@@ -114,8 +118,7 @@ public class MerchantOrder extends AppCompatActivity {
                                 if(success.equals("1")){
                                     pDialog.hide();
                                     Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
-                                    String idOrder = itemResponse.getString("id_order");
-                                    showQRCodePayment(idOrder);
+                                    startPrintQRCodeActivity(idOrder);
 
                                 }
                                 else{
@@ -142,7 +145,7 @@ public class MerchantOrder extends AppCompatActivity {
                 protected Map<String, String> getParams()
                 {
                     Map<String, String> params = new HashMap<String, String>();
-                    JSONObject jsonObject = new JSONObject();
+                    params.put("id_order", idOrder);
 
                     int[] quantityEachItem = orderItemAdapter.getQuantityArray();
                     int counter = 0;
@@ -165,18 +168,21 @@ public class MerchantOrder extends AppCompatActivity {
 
     }
 
-    private void showQRCodePayment(String idOrder){
-            Intent intent = new Intent(this, MerchantInsertUsername.class);
-            intent.putExtra("QRCodeData", idOrder+";"+getUsernameMerchant()+";" + totalHarga);
-            this.onPause();
-            startActivity(intent);
+    private void startPrintQRCodeActivity(String idOrder){
+        Intent tempIntent = getIntent();
+        Bundle tempExtras = tempIntent.getExtras();
+        String secretKeyString = tempExtras.getString("secretKey");
+
+        Bundle extras = new Bundle();
+        extras.putString("idOrder", idOrder);
+        extras.putString("secretKey", secretKeyString);
+        extras.putString("totalHarga", String.valueOf(totalHarga));
+
+        Intent intent = new Intent(this, MerchantPrintQRCode.class);
+        intent.putExtras(extras);
+        startActivity(intent);
     }
 
-    private String getUsernameMerchant(){
-        SharedPreferences sharedPreferences = this.getSharedPreferences(getString(R.string.shared_pref_appname), Context.MODE_PRIVATE);
-        String usernameMerchant = sharedPreferences.getString(getString(R.string.shared_pref_username), "");
-        return usernameMerchant;
-    }
 
     private void showItemsList(){
         List<Item> items = this.appDatabase.itemDao().getAllItems();

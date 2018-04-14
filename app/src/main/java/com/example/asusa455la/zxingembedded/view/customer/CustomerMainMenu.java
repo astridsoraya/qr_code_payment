@@ -76,8 +76,6 @@ public class CustomerMainMenu extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_customer_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
 
         sharedPreferences = getSharedPreferences(getString(R.string.shared_pref_appname), Context.MODE_PRIVATE);
         appDatabase  = AppDatabase.getDatabaseInstance(this);
@@ -106,9 +104,7 @@ public class CustomerMainMenu extends AppCompatActivity {
 
             @Override
             public void onClick(View view) {
-            Bundle bundle = new Bundle();
-            bundle.putString("userType", "customer");
-            showOtherActivityWithData(CaptureQRCode.class, bundle);
+            showOtherActivity(CustomerCheckIn.class);
             }
         });
 
@@ -135,12 +131,6 @@ public class CustomerMainMenu extends AppCompatActivity {
 
     private void showOtherActivity(Class otherActivity){
         Intent intent = new Intent(this, otherActivity);
-        startActivity(intent);
-    }
-
-    private void showOtherActivityWithData(Class otherActivity, Bundle bundle){
-        Intent intent = new Intent(this, otherActivity);
-        intent.putExtras(bundle);
         startActivity(intent);
     }
 

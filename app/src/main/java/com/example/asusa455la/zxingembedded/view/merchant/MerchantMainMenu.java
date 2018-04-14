@@ -23,6 +23,7 @@ import com.example.asusa455la.zxingembedded.model.Item;
 import com.example.asusa455la.zxingembedded.utility.AppController;
 import com.example.asusa455la.zxingembedded.utility.AppDatabase;
 import com.example.asusa455la.zxingembedded.utility.Cryptography;
+import com.example.asusa455la.zxingembedded.view.intro.CaptureQRCode;
 import com.example.asusa455la.zxingembedded.view.intro.Login;
 
 import org.bouncycastle.operator.OperatorCreationException;
@@ -98,7 +99,9 @@ public class MerchantMainMenu extends AppCompatActivity {
         this.mCreateOrderButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startAnotherActivity(MerchantOrder.class);
+                Bundle extras = new Bundle();
+                extras.putString("userType", "merchant");
+                startAnotherActivityWithData(CaptureQRCode.class, extras);
             }
         });
 
@@ -143,6 +146,11 @@ public class MerchantMainMenu extends AppCompatActivity {
         startActivity(intent);
     }
 
+    private void startAnotherActivityWithData(Class otherActivity, Bundle extras){
+        Intent intent = new Intent(this, otherActivity);
+        intent.putExtras(extras);
+        startActivity(intent);
+    }
 
     private void retrieveItemsJSON(){
         // Tag used to cancel the request

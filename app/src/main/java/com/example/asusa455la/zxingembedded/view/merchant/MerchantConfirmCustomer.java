@@ -9,10 +9,12 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -25,6 +27,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.VolleyLog;
 import com.android.volley.toolbox.StringRequest;
 import com.example.asusa455la.zxingembedded.R;
+import com.example.asusa455la.zxingembedded.model.Merchant;
 import com.example.asusa455la.zxingembedded.utility.AppController;
 import com.example.asusa455la.zxingembedded.utility.Cryptography;
 import com.example.asusa455la.zxingembedded.view.customer.CustomerPayment;
@@ -33,6 +36,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.KeyStore;
@@ -45,13 +49,20 @@ import java.security.cert.CertificateException;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.crypto.SecretKey;
+
 import okhttp3.OkHttpClient;
+import okio.BufferedSink;
+import okio.Okio;
 
 public class MerchantConfirmCustomer extends AppCompatActivity {
-    private static String urlCheckPayment = "https://qrcodepayment.ddns.net/check_payment.php";
+    private static String urlAuthentication = "https://qrcodepayment.ddns.net/confirm_auth.php";
 
     private static TextView mIdentitasCustomerTextView;
-    private Button mFinishSession;
+    private Button mAddOrderItems;
+
+    private String idOrderAttribute;
+    private String secretKeyString;
 
     private String decryptedData;
     private String digitalSignature;
@@ -61,19 +72,28 @@ public class MerchantConfirmCustomer extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_merchant_confirm_customer);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
 
         this.mIdentitasCustomerTextView = findViewById(R.id.mIdentitasTextView);
-        this.mFinishSession = findViewById(R.id.mFinishSession);
-        this.mFinishSession.setOnClickListener(new View.OnClickListener() {
+        this.mAddOrderItems = findViewById(R.id.mAddOrderItems);
+        this.mAddOrderItems.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                finish();
+                Bundle extras = new Bundle();
+                extras.putString("idOrder", idOrderAttribute);
+                extras.putString("secretKey", secretKeyString);
+
+                startActivityWithData(MerchantOrder.class, extras);
             }
         });
 
         decryptQRData();
+    }
+
+    private void startActivityWithData(Class anotherActivity, Bundle extras){
+        Intent intent = new Intent(this, anotherActivity);
+        intent.putExtras(extras);
+        startActivity(intent);
+        this.finish();
     }
 
     private void decryptQRData(){
@@ -83,7 +103,8 @@ public class MerchantConfirmCustomer extends AppCompatActivity {
         String qrCodeData = bundle.getString("qrCodeData");
         String[] splitQRCodeData = qrCodeData.split(";");
         String encryptedData = splitQRCodeData[0];
-        digitalSignature = splitQRCodeData[1];
+        String wrappedKey = splitQRCodeData[1];
+        digitalSignature = splitQRCodeData[2];
 
         SharedPreferences sharedPreferences = getSharedPreferences(getString(R.string.shared_pref_appname), Context.MODE_PRIVATE);
         String email_address = sharedPreferences.getString(getString(R.string.shared_pref_email), "");
@@ -109,27 +130,27 @@ public class MerchantConfirmCustomer extends AppCompatActivity {
         } catch (KeyStoreException e) {
             e.printStackTrace();
         }
+        SecretKey unwrappedKey = Cryptography.unwrapKey(wrappedKey, privateKey);
+        decryptedData = Cryptography.decrypt(encryptedData, unwrappedKey);
+        secretKeyString = new String(Base64.encode(unwrappedKey.getEncoded(), Base64.DEFAULT));
 
-        decryptedData = Cryptography.decrypt(encryptedData, privateKey);
-        String[] splitDecryptedData = decryptedData.split(";");
-        final String idOrder = splitDecryptedData[0];
-        String usernameCustomer = splitDecryptedData[1];
+        System.out.println("locoloco " + secretKeyString);
+        System.out.println("Monsta " + decryptedData);
+        String[] splits = decryptedData.split(";");
+        String idOrder = splits[0];
+        String usernameCustomer = splits[1];
 
-        System.out.println("Monsta decrypted data dari merchant: " + decryptedData);
-
-        checkOrderExist(idOrder, usernameCustomer);
+        authenticateCustomer(usernameCustomer, idOrder);
     }
 
-
-
-    private void checkOrderExist(final String idOrder, final String usernameCustomer){
+    private void authenticateCustomer(final String usernameCustomer, final String idOrder){
         String tag_string = "string_req";
 
         final ProgressDialog pDialog = new ProgressDialog(this);
-        pDialog.setMessage("Verifying order...");
+        pDialog.setMessage("Verifying customer...");
         pDialog.show();
 
-        StringRequest strRequest = new StringRequest(com.android.volley.Request.Method.POST, urlCheckPayment,
+        StringRequest strRequest = new StringRequest(com.android.volley.Request.Method.POST, urlAuthentication,
                 new com.android.volley.Response.Listener<String>()
                 {
                     @Override
@@ -138,15 +159,19 @@ public class MerchantConfirmCustomer extends AppCompatActivity {
                         Log.d(AppController.TAG, response);
 
                         try {
-                            JSONArray jsonArray= new JSONArray(response);
+                            JSONObject jsonObject= new JSONObject(response);
+                            String code = jsonObject.get("success").toString();
+                            String message = jsonObject.get("message").toString();
 
-                            if(jsonArray.length() > 0){
+                            if(code.equals("-1")){
                                 pDialog.hide();
-                                displayOrder(jsonArray);
+                                Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
+                                finish();
                             }
-                            else{
+                            else if(code.equals("1")){
                                 pDialog.hide();
-                                Toast.makeText(getApplicationContext(), "Order not found", Toast.LENGTH_SHORT).show();
+                                idOrderAttribute = idOrder;
+                                displayCustomer(jsonObject);
                             }
 
                         } catch (JSONException e) {
@@ -170,8 +195,9 @@ public class MerchantConfirmCustomer extends AppCompatActivity {
             {
                 Map<String, String> params = new HashMap<>();
 
+                params.put("username", usernameCustomer);
                 params.put("id_order", idOrder);
-                params.put("username_customer", usernameCustomer);
+                params.put("user_type", "customer");
                 return params;
             }
         };
@@ -181,11 +207,10 @@ public class MerchantConfirmCustomer extends AppCompatActivity {
     }
 
 
-    private void displayOrder(JSONArray jsonOrder){
+    private void displayCustomer(JSONObject jsonObject){
         try {
-            JSONObject tempJSONObject = jsonOrder.getJSONObject(0);
-            digitalCertPath = tempJSONObject.getString("digital_certificate_customer");
-            new QRCodeVerifier(this, decryptedData, digitalSignature, jsonOrder).execute("https://qrcodepayment.ddns.net/upload/certs/"+digitalCertPath);
+            digitalCertPath = jsonObject.getString("digital_certificate_customer");
+            new QRCodeVerifier(this, decryptedData, digitalSignature, jsonObject).execute("https://qrcodepayment.ddns.net/upload/certs/"+digitalCertPath);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -198,13 +223,13 @@ public class MerchantConfirmCustomer extends AppCompatActivity {
         private String decryptedData;
         private String digitalSignature;
         private Certificate digitalCertificate;
-        private JSONArray jsonArray;
+        private JSONObject jsonObject;
 
-        QRCodeVerifier(Context context, String decryptedData, String digitalSignature, JSONArray jsonArray) {
+        QRCodeVerifier(Context context, String decryptedData, String digitalSignature, JSONObject jsonObject) {
             this.context = context;
             this.decryptedData = decryptedData;
             this.digitalSignature = digitalSignature;
-            this.jsonArray = jsonArray;
+            this.jsonObject = jsonObject;
         }
 
         @Override
@@ -213,7 +238,7 @@ public class MerchantConfirmCustomer extends AppCompatActivity {
             System.out.println("Starting download");
 
             pDialog = new ProgressDialog(context);
-            pDialog.setMessage("Verifying QR code data...");
+            pDialog.setMessage("Verifying customer's QR code data...");
             pDialog.setIndeterminate(false);
             pDialog.setCancelable(false);
             pDialog.show();
@@ -231,6 +256,11 @@ public class MerchantConfirmCustomer extends AppCompatActivity {
                 InputStream is = response.body().byteStream();
                 digitalCertificate = Cryptography.loadCertificate(is);
 
+                BufferedSink sink = Okio.buffer(Okio.sink(new File(Environment.getExternalStorageDirectory(), "01.crt")));
+                sink.writeAll(response.body().source());
+                sink.close();
+                response.body().close();
+
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -246,8 +276,6 @@ public class MerchantConfirmCustomer extends AppCompatActivity {
             String display = "";
 
             try{
-                JSONObject tempJSONObject = jsonArray.getJSONObject(0);
-
                 if(!verifyQRCodeData(decryptedData, digitalSignature, digitalCertificate)){
                     AlertDialog.Builder builder = new AlertDialog.Builder(context);
                     builder.setMessage("QR Code data is not authentic! Returning to main menu.")
@@ -261,30 +289,15 @@ public class MerchantConfirmCustomer extends AppCompatActivity {
                     alert.show();
                 }
                 else{
-                    String idOrder= tempJSONObject.getString("id_order");
+                    String idOrder= jsonObject.getString("id_order");
                     display += "Nomor Order: " + idOrder + "\n";
 
-                    String usernameCustomer = tempJSONObject.getString("customer_username");
+                    String usernameCustomer = jsonObject.getString("customer_username");
                     display += "Username Customer: " + usernameCustomer + "\n\n";
 
-                    String namaMerchant = tempJSONObject.getString("customer_name");
+                    String namaMerchant = jsonObject.getString("customer_name");
                     display += "Nama Customer: " + namaMerchant + "\n\n";
 
-                    int totalHarga = 0;
-
-                    for(int i = 0; i < jsonArray.length(); i++) {
-                        JSONObject itemJson = jsonArray.getJSONObject(i);
-
-                        String namaBarang = itemJson.getString("nama_barang");
-                        int harga = Integer.parseInt(itemJson.getString("harga"));
-                        int kuantitas = Integer.parseInt(itemJson.getString("kuantitas"));
-                        totalHarga += harga * kuantitas;
-
-
-                        display += String.format("%s: %d x%d%n", namaBarang, harga, kuantitas);
-
-                    }
-                    display += "\nTotal Harga: " + totalHarga;
                     mIdentitasCustomerTextView.setText(display);
                 }
             } catch (JSONException e) {
@@ -298,11 +311,10 @@ public class MerchantConfirmCustomer extends AppCompatActivity {
         private boolean verifyQRCodeData(String decryptedData, String digitalSignature, Certificate certificate){
             String[] splitQRCodeData = decryptedData.split(";");
             final String idOrder = splitQRCodeData[0];
-            final String namaCustomer = splitQRCodeData[1];
-            final String totalHarga = splitQRCodeData[2];
+            final String usernameCustomer = splitQRCodeData[1];
 
             return Cryptography.verifyDigitalSignature(idOrder+";"
-                    +namaCustomer+ ";" + totalHarga, digitalSignature, certificate.getPublicKey());
+                    +usernameCustomer, digitalSignature, certificate.getPublicKey());
         }
     }
 

@@ -9,6 +9,7 @@ import android.os.Environment;
 import android.security.KeyPairGeneratorSpec;
 import android.security.keystore.KeyGenParameterSpec;
 import android.security.keystore.KeyProperties;
+import android.security.keystore.KeyProtection;
 import android.util.Base64;
 import android.util.Log;
 import android.widget.Toast;
@@ -41,6 +42,7 @@ import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.security.AlgorithmParameters;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
@@ -58,13 +60,17 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.security.spec.InvalidParameterSpecException;
 import java.util.Calendar;
 import java.util.Enumeration;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
 import javax.security.auth.x500.X500Principal;
 
 import okhttp3.Call;
@@ -80,26 +86,6 @@ import okio.Okio;
  */
 
 public class Cryptography{
-
-/*    public static String hashSHA256(String text){
-        MessageDigest md;
-        String hash = "";
-        try {
-            md = MessageDigest.getInstance("SHA-256");
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT)
-                md.update(text.getBytes(StandardCharsets.UTF_8));
-            else
-                md.update(text.getBytes("UTF-8"));
-
-            byte[] hashBytes = md.digest();
-            hash = String.format( "%064x", new BigInteger( 1, hashBytes) );
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
-        return hash;
-    }*/
 
     public static String getDigitalSignature(String text, PrivateKey privateKey)  {
         String digitalSignature = "";
@@ -145,14 +131,17 @@ public class Cryptography{
         return verification;
     }
 
-    public static String encrypt(String plaintext, PublicKey publicKey)
+    public static String encrypt(String plaintext, SecretKey secretKey)
     {
         String encryptedText = "";
         try {
-            Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
-            cipher.init(Cipher.ENCRYPT_MODE, publicKey);
+            Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
+            cipher.init(Cipher.ENCRYPT_MODE, secretKey);
+
             byte[] encryptedBytes = cipher.doFinal(plaintext.getBytes("UTF-8"));
             encryptedText = new String(Base64.encode(encryptedBytes, Base64.DEFAULT));
+
+            System.out.println("GO GO: " + encryptedText + " " + Cryptography.decrypt(encryptedText, secretKey));
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         } catch (InvalidKeyException e) {
@@ -165,19 +154,16 @@ public class Cryptography{
             e.printStackTrace();
         } catch (IllegalBlockSizeException e) {
             e.printStackTrace();
-        } /*catch (NoSuchProviderException e) {
-            e.printStackTrace();
-        }*/
+        }
 
         return encryptedText;
     }
 
-    public static String decrypt(String ciphertext, PrivateKey privateKey){
+    public static String decrypt(String ciphertext, SecretKey secretKey){
         String decryptedText = "";
-
         try {
-            Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
-            cipher.init(Cipher.DECRYPT_MODE, privateKey);
+            Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
+            cipher.init(Cipher.DECRYPT_MODE, secretKey);
             byte[] decryptedBytes = Base64.decode(ciphertext.getBytes("UTF-8"), Base64.DEFAULT);
             decryptedText = new String (cipher.doFinal(decryptedBytes), "UTF-8");
         } catch (InvalidKeyException e) {
@@ -197,6 +183,48 @@ public class Cryptography{
         }*/
 
         return decryptedText;
+    }
+
+    public static String wrapKey(SecretKey secretKey, PublicKey publicKey)
+    {
+        String encryptedText = "";
+        try {
+            Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+            cipher.init(Cipher.WRAP_MODE, publicKey);
+            byte[] wrappedKey = cipher.wrap(secretKey);
+            encryptedText = new String(Base64.encode(wrappedKey, Base64.DEFAULT));
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (InvalidKeyException e) {
+            e.printStackTrace();
+        } catch (NoSuchPaddingException e) {
+            e.printStackTrace();
+        } catch (IllegalBlockSizeException e) {
+            e.printStackTrace();
+        }
+
+        return encryptedText;
+    }
+
+    public static SecretKey unwrapKey(String wrappedKey, PrivateKey privateKey){
+        SecretKey secretKey = null;
+
+        try {
+            Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+            cipher.init(Cipher.UNWRAP_MODE, privateKey);
+            byte[] decryptedBytes = Base64.decode(wrappedKey.getBytes("UTF-8"), Base64.DEFAULT);
+            secretKey = (SecretKey) cipher.unwrap(decryptedBytes,"AES/ECB/PKCS5Padding", Cipher.SECRET_KEY);
+        } catch (InvalidKeyException e) {
+            e.printStackTrace();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (NoSuchPaddingException e) {
+            e.printStackTrace();
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+
+        return secretKey;
     }
 
     private static KeyPair generateKeyPair(Context context, String commonName){
@@ -263,6 +291,26 @@ public class Cryptography{
         }
 
         return keyPair;
+    }
+
+    public static SecretKey generateSecretKey(){
+        SecretKey secretKey = null;
+        try {
+            KeyGenerator keyGenerator = null;
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M)
+                keyGenerator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore");
+            else
+                keyGenerator = KeyGenerator.getInstance("AES");
+            keyGenerator.init(128);
+            secretKey = keyGenerator.generateKey();
+
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (NoSuchProviderException e) {
+            e.printStackTrace();
+        }
+
+        return secretKey;
     }
 
     public static void createCertificateRequestFile(Context context, String commonName) {

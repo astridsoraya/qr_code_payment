@@ -57,13 +57,15 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.crypto.SecretKey;
+
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
 
 public class CustomerPayment extends AppCompatActivity {
-    private static String urlCheckPayment = "https://qrcodepayment.ddns.net/check_payment.php";
+    private static String urlCheckPayment = "https://qrcodepayment.ddns.net/confirm_auth.php";
 
     private Button cPayButton;
     private static TextView cPaymentDetail;
@@ -109,7 +111,8 @@ public class CustomerPayment extends AppCompatActivity {
         String qrCodeData = bundle.getString("qrCodeData");
         String[] splitQRCodeData = qrCodeData.split(";");
         String encryptedData = splitQRCodeData[0];
-        digitalSignature = splitQRCodeData[1];
+        String wrappedKey = splitQRCodeData[1];
+        digitalSignature = splitQRCodeData[2];
 
         SharedPreferences sharedPreferences = getSharedPreferences(getString(R.string.shared_pref_appname), Context.MODE_PRIVATE);
         String email_address = sharedPreferences.getString(getString(R.string.shared_pref_email), "");
@@ -136,7 +139,8 @@ public class CustomerPayment extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        decryptedData = Cryptography.decrypt(encryptedData, privateKey);
+        SecretKey secretKey = Cryptography.unwrapKey(wrappedKey, privateKey);
+        decryptedData = Cryptography.decrypt(encryptedData, secretKey);
         System.out.println("Monsta decrypted data dari merchant: " + decryptedData);
 
         String[] splitDecryptedData = decryptedData.split(";");
