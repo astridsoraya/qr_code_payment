@@ -181,6 +181,8 @@ public class MerchantOrder extends AppCompatActivity {
         Intent intent = new Intent(this, MerchantPrintQRCode.class);
         intent.putExtras(extras);
         startActivity(intent);
+
+        finish();
     }
 
 

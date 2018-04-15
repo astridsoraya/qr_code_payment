@@ -65,42 +65,40 @@ import okhttp3.Response;
 
 
 public class CustomerPayment extends AppCompatActivity {
-    private static String urlCheckPayment = "https://qrcodepayment.ddns.net/confirm_auth.php";
+    private static String urlAuthMerchant = "https://qrcodepayment.ddns.net/confirm_auth.php";
 
     private Button cPayButton;
-    private static TextView cPaymentDetail;
+    private TextView cPaymentDetail;
+    private ProgressDialog pDialog;
 
     private String decryptedData;
     private String digitalSignature;
-    private String digitalCertPath;
-
-    private static int totalHarga;
+    private String idOrder;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_customer_payment);
 
-        final SharedPreferences sharedPreferences = this.getSharedPreferences(getString(R.string.shared_pref_appname), Context.MODE_PRIVATE);
+        this.decryptedData = "";
+        this.digitalSignature = "";
+        this.idOrder = "";
 
         this.cPayButton = findViewById(R.id.cCreateQRCodeButton);
         this.cPayButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Bundle bundle = new Bundle();
-                bundle.putString("digitalCertificate", digitalCertPath);
-                String usernameCustomer = (sharedPreferences.getString((getString(R.string.shared_pref_username)), ""));
-                String[] splitQRCodeData = decryptedData.split(";");
-                final String orderData = splitQRCodeData[0];
-
-                bundle.putString("qrCodeData", orderData+";" + usernameCustomer + ";" + totalHarga);
-
-                startPrintQRCode(CustomerPrintQRCode.class, bundle);
-                onPause();
+                Bundle extras = new Bundle();
+                extras.putString("idOrder", idOrder);
+                startAnotherActivityWithData(ConfirmPayment.class, extras);
             }
         });
 
         this.cPaymentDetail = findViewById(R.id.cPaymentDetailTextView);
+        pDialog = new ProgressDialog(this);
+        pDialog.setMessage("Verifying order...");
+        pDialog.show();
+
         decryptQRData();
     }
 
@@ -127,15 +125,7 @@ public class CustomerPayment extends AppCompatActivity {
             KeyStore.PrivateKeyEntry privateKeyEntry = (KeyStore.PrivateKeyEntry) entry;
             privateKey = privateKeyEntry.getPrivateKey();
 
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (CertificateException e) {
-            e.printStackTrace();
-        } catch (UnrecoverableEntryException e) {
-            e.printStackTrace();
-        } catch (KeyStoreException e) {
+        } catch (IOException | KeyStoreException | UnrecoverableEntryException | CertificateException | NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
 
@@ -144,22 +134,17 @@ public class CustomerPayment extends AppCompatActivity {
         System.out.println("Monsta decrypted data dari merchant: " + decryptedData);
 
         String[] splitDecryptedData = decryptedData.split(";");
-        final String idOrder = splitDecryptedData[0];
-        final String usernameMerchant = splitDecryptedData[1];
+        idOrder = splitDecryptedData[0];
+        String usernameMerchant = splitDecryptedData[1];
 
         checkOrderExist(idOrder, usernameMerchant);
     }
 
 
-
-    private void checkOrderExist(final String idOrder, final String usernameMerchant){
+    private void checkOrderExist(final String idOrderTemp, final String usernameMerchant){
         String tag_string = "string_req";
 
-        final ProgressDialog pDialog = new ProgressDialog(this);
-        pDialog.setMessage("Verifying order...");
-        pDialog.show();
-
-        StringRequest strRequest = new StringRequest(com.android.volley.Request.Method.POST, urlCheckPayment,
+        StringRequest strRequest = new StringRequest(com.android.volley.Request.Method.POST, urlAuthMerchant,
                 new com.android.volley.Response.Listener<String>()
                 {
                     @Override
@@ -171,8 +156,8 @@ public class CustomerPayment extends AppCompatActivity {
                             JSONArray jsonArray= new JSONArray(response);
 
                             if(jsonArray.length() > 0){
-                                pDialog.hide();
                                 displayOrder(jsonArray);
+                                pDialog.hide();
                             }
                             else{
                                 pDialog.hide();
@@ -199,8 +184,9 @@ public class CustomerPayment extends AppCompatActivity {
             protected Map<String, String> getParams()
             {
                 Map<String, String> params = new HashMap<>();
-                params.put("id_order", idOrder);
-                params.put("username_merchant", usernameMerchant);
+                params.put("id_order", idOrderTemp);
+                params.put("username", usernameMerchant);
+                params.put("user_type", "merchant");
                 return params;
             }
         };
@@ -210,102 +196,39 @@ public class CustomerPayment extends AppCompatActivity {
     }
 
 
-    private void displayOrder(JSONArray jsonOrder){
-        try {
-            JSONObject tempJSONObject = jsonOrder.getJSONObject(0);
-            digitalCertPath = tempJSONObject.getString("digital_certificate_merchant");
-            new QRCodeVerifier(this, decryptedData, digitalSignature, jsonOrder).execute("https://qrcodepayment.ddns.net/upload/certs/"+digitalCertPath);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-    }
-
-    private void startPrintQRCode(Class anotherClass, Bundle bundle){
-        Intent intent = new Intent(this, anotherClass);
-        intent.putExtras(bundle);
-        startActivity(intent);
-        finish();
-    }
-
-    private static class QRCodeVerifier extends AsyncTask<String, Integer, String> {
-        private Context context;
-        private ProgressDialog pDialog;
-        private String decryptedData;
-        private String digitalSignature;
-        private Certificate digitalCertificate;
-        private JSONArray jsonArray;
-
-        QRCodeVerifier(Context context, String decryptedData, String digitalSignature, JSONArray jsonArray) {
-            this.context = context;
-            this.decryptedData = decryptedData;
-            this.digitalSignature = digitalSignature;
-            this.jsonArray = jsonArray;
-        }
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            System.out.println("Starting download");
-
-            pDialog = new ProgressDialog(context);
-            pDialog.setMessage("Verifying QR code data...");
-            pDialog.setIndeterminate(false);
-            pDialog.setCancelable(false);
-            pDialog.show();
-        }
-
-        @Override
-        protected String doInBackground(String... sUrl) {
-            OkHttpClient client = new OkHttpClient();
-
-            Request request = new Request.Builder()
-                    .url(sUrl[0])
-                    .build();
-
-            try (Response response = client.newCall(request).execute()) {
-                InputStream is = response.body().byteStream();
-                digitalCertificate = Cryptography.loadCertificate(is);
-
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return null;
-        }
-
-        /*        *
-                 * After completing background task
-                 **/
-        @Override
-        protected void onPostExecute(String file_url) {
-            System.out.println("Downloaded");
+    private void displayOrder(JSONArray jsonOrders){
             String display = "";
-            totalHarga = 0;
+            int totalHarga = 0;
+
+            File digCertFile = new File(Environment.getExternalStorageDirectory(), "01.crt");
+            Certificate digitalCertificate = Cryptography.loadCertificate(digCertFile);
+            boolean deletedFile = digCertFile.delete();
 
             try{
-                JSONObject tempJSONObject = jsonArray.getJSONObject(0);
-
+                pDialog.hide();
                 if(!verifyQRCodeData(decryptedData, digitalSignature, digitalCertificate)){
-                    AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                    AlertDialog.Builder builder = new AlertDialog.Builder(this);
                     builder.setMessage("QR Code data is not authentic! Returning to main menu.")
                             .setCancelable(false)
                             .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                                 public void onClick(DialogInterface dialog, int id) {
-                                    ((Activity) context).finish();
+                                    finish();
                                 }
                             });
                     AlertDialog alert = builder.create();
                     alert.show();
                 }
                 else{
+                    JSONObject tempJSONObject = jsonOrders.getJSONObject(0);
+
                     String idOrder= tempJSONObject.getString("id_order");
                     display += "Nomor Order: " + idOrder + "\n";
 
                     String namaMerchant = tempJSONObject.getString("nama_merchant");
                     display += "Nama Merchant: " + namaMerchant + "\n\n";
 
-                    for(int i = 0; i < jsonArray.length(); i++) {
-                        JSONObject itemJson = jsonArray.getJSONObject(i);
+                    for(int i = 0; i < jsonOrders.length(); i++) {
+                        JSONObject itemJson = jsonOrders.getJSONObject(i);
 
                         String namaBarang = itemJson.getString("nama_barang");
                         int harga = Integer.parseInt(itemJson.getString("harga"));
@@ -318,23 +241,29 @@ public class CustomerPayment extends AppCompatActivity {
                     }
                     display += "\nTotal Harga: " + totalHarga;
                     cPaymentDetail.setText(display);
+                    pDialog.hide();
                 }
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-            pDialog.dismiss();
-        }
+
+    }
+
+    private boolean verifyQRCodeData(String decryptedData, String digitalSignature, Certificate certificate){
+        String[] splitQRCodeData = decryptedData.split(";");
+        String tempIdOrder = splitQRCodeData[0];
+        String merchantUsername = splitQRCodeData[1];
+        String totalHarga = splitQRCodeData[2];
+
+        return Cryptography.verifyDigitalSignature(tempIdOrder+";"
+                +merchantUsername+ ";" + totalHarga, digitalSignature, certificate.getPublicKey());
+    }
 
 
-
-        private boolean verifyQRCodeData(String decryptedData, String digitalSignature, Certificate certificate){
-            String[] splitQRCodeData = decryptedData.split(";");
-            final String idOrder = splitQRCodeData[0];
-            final String merchantUsername = splitQRCodeData[1];
-            final String totalHarga = splitQRCodeData[2];
-
-            return Cryptography.verifyDigitalSignature(idOrder+";"
-                    +merchantUsername+ ";" + totalHarga, digitalSignature, certificate.getPublicKey());
-        }
+    private void startAnotherActivityWithData(Class anotherActivity, Bundle extras){
+        Intent intent = new Intent(this, anotherActivity);
+        intent.putExtras(extras);
+        startActivity(intent);
+        finish();
     }
 }

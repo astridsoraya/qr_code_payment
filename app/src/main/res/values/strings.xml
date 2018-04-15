@@ -70,6 +70,8 @@
     <string name="title_activity_customer_print_qrcode">CustomerPrintQRCode</string>
     <string name="title_activity_browse_merchant">BrowseMerchant</string>
 
+    <string name="countdown_caption">Remaining time to scan: </string>
+
 </resources>
 
 

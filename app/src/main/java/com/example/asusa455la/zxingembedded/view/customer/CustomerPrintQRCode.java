@@ -1,12 +1,15 @@
 package com.example.asusa455la.zxingembedded.view.customer;
 
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Base64;
@@ -14,6 +17,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.Request;
@@ -34,9 +38,12 @@ import com.journeyapps.barcodescanner.BarcodeEncoder;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -50,14 +57,18 @@ import java.util.Map;
 import javax.crypto.SecretKey;
 
 import okhttp3.OkHttpClient;
-import okio.BufferedSink;
-import okio.Okio;
 
 public class CustomerPrintQRCode extends AppCompatActivity {
     private static String requestOrderUrl = "https://qrcodepayment.ddns.net/add_order.php";
+    private static String cancelOrderUrl = "https://qrcodepayment.ddns.net/cancel_order.php";
+
+    private CountDownTimer countDownTimer;
 
     private static ImageView qrCodeImageView;
+    private TextView timerTextView;
     private Button payOrderButton;
+
+    private String idOrderAttribute;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,6 +77,7 @@ public class CustomerPrintQRCode extends AppCompatActivity {
 
         this.qrCodeImageView = findViewById(R.id.cQRCodeView);
         this.payOrderButton = findViewById(R.id.cPayOrderButton);
+        this.timerTextView = findViewById(R.id.cTimerTextView);
 
         this.payOrderButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -75,6 +87,36 @@ public class CustomerPrintQRCode extends AppCompatActivity {
         });
 
         requestOrder();
+
+        final Context context = this;
+        final String countDownCaption = this.timerTextView.getText().toString();
+        this.countDownTimer = new CountDownTimer(60000, 1000) {
+
+            public void onTick(long millisUntilFinished) {
+                long secondUntilFinished = millisUntilFinished / 1000;
+
+                if(secondUntilFinished <= 1){
+                    timerTextView.setText(String.format("%s %d second", countDownCaption, secondUntilFinished));
+                }
+                else{
+                    timerTextView.setText(String.format("%s %d seconds", countDownCaption, secondUntilFinished));
+                }
+            }
+
+            public void onFinish() {
+                AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                builder.setMessage("Time is up! Please, request another new order! Returning to main menu...")
+                        .setCancelable(false)
+                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                cancelOrder();
+                                finish();
+                            }
+                        });
+                AlertDialog alert = builder.create();
+                alert.show();
+            }
+        }.start();
     }
 
     private void requestOrder(){
@@ -108,11 +150,14 @@ public class CustomerPrintQRCode extends AppCompatActivity {
 
                             if(success.equals("1")){
                                 String idOrder = itemResponse.getString("id_order");
+                                idOrderAttribute = idOrder;
                                 new QRCodeCreator(context, alias, idOrder, username).execute("https://qrcodepayment.ddns.net/upload/certs/"+digitalCertificatePath);
                                 pDialog.hide();
+                                Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
                             }
                             else{
                                 pDialog.hide();
+                                Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
                             }
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -133,7 +178,69 @@ public class CustomerPrintQRCode extends AppCompatActivity {
         AppController.getInstance().addToRequestQueue(strRequest, tag_string);
     }
 
+    private void cancelOrder(){
+        SharedPreferences sharedPreferences = this.getSharedPreferences(getString(R.string.shared_pref_appname), Context.MODE_PRIVATE);
+        final String userType = (sharedPreferences.getString((getString(R.string.shared_pref_user_type)), ""));
+
+        String tag_string = "string_req";
+
+        final ProgressDialog pDialog = new ProgressDialog(this);
+        pDialog.setMessage("Canceling order...");
+        pDialog.show();
+
+        StringRequest strRequest = new StringRequest(Request.Method.POST, cancelOrderUrl,
+                new Response.Listener<String>()
+                {
+                    @Override
+                    public void onResponse(String response)
+                    {
+                        Log.d(AppController.TAG, response.toString());
+
+                        try {
+                            JSONObject itemResponse = new JSONObject(response);
+                            String success = itemResponse.getString("success");
+                            String message = itemResponse.getString("message");
+
+                            if(success.equals("1")){
+                                pDialog.hide();
+                                Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
+                            }
+                            else{
+                                pDialog.hide();
+                                Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                },
+                new Response.ErrorListener()
+                {
+                    @Override
+                    public void onErrorResponse(VolleyError error)
+                    {
+                        VolleyLog.d(AppController.TAG, "Error: " + error.getMessage());
+                        pDialog.hide();
+                    }
+                })
+        {
+            @Override
+            protected Map<String, String> getParams()
+            {
+                Map<String, String> params = new HashMap<>();
+                params.put("id_order", idOrderAttribute);
+                params.put("user_type", userType);
+                return params;
+            }
+        };
+
+        // Adding request to request queue
+        AppController.getInstance().addToRequestQueue(strRequest, tag_string);
+    }
+
     private void captureQRCode(){
+        this.countDownTimer.cancel();
+
         Bundle extras = new Bundle();
 
         SharedPreferences sharedPreferences = this.getSharedPreferences(getString(R.string.shared_pref_appname), Context.MODE_PRIVATE);
@@ -184,12 +291,26 @@ public class CustomerPrintQRCode extends AppCompatActivity {
 
             try (okhttp3.Response response = client.newCall(request).execute()) {
                 InputStream is = response.body().byteStream();
-                digitalCertificate = Cryptography.loadCertificate(is);
 
-                BufferedSink sink = Okio.buffer(Okio.sink(new File(Environment.getExternalStorageDirectory(), "01.crt")));
-                sink.writeAll(response.body().source());
-                sink.close();
-                response.body().close();
+                File file = new File(Environment.getExternalStorageDirectory(), "01.crt");
+                BufferedInputStream input = new BufferedInputStream(is);
+                OutputStream output = new FileOutputStream(file);
+
+                byte[] data = new byte[1024];
+
+                int count = 0;
+                long total = 0;
+
+                while ((count = input.read(data)) != -1) {
+                    total += count;
+                    output.write(data, 0, count);
+                }
+
+                output.flush();
+                output.close();
+                input.close();
+                digitalCertificate = Cryptography.loadCertificate(file);
+
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -231,17 +352,7 @@ public class CustomerPrintQRCode extends AppCompatActivity {
                     qrCodeImageView.setImageBitmap(bitmap);
 
                     System.out.println("Dean Customer: " + qrcode);
-                } catch (WriterException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (CertificateException e) {
-                    e.printStackTrace();
-                } catch (NoSuchAlgorithmException e) {
-                    e.printStackTrace();
-                } catch (UnrecoverableEntryException e) {
-                    e.printStackTrace();
-                } catch (KeyStoreException e) {
+                } catch (WriterException | KeyStoreException | UnrecoverableEntryException | NoSuchAlgorithmException | CertificateException | IOException e) {
                     e.printStackTrace();
                 }
 

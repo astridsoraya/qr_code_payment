@@ -83,7 +83,7 @@ public class ConfirmPayment extends AppCompatActivity {
 
     private void confirmPayment(){
         Intent intent = this.getIntent();
-        final String idOrder = intent.getExtras().getString("order_data");
+        final String idOrder = intent.getExtras().getString("idOrder");
 
         SharedPreferences sharedPreferences = getSharedPreferences(getString(R.string.shared_pref_appname), Context.MODE_PRIVATE);
         final String idCustomer  = sharedPreferences.getString(getString(R.string.shared_pref_id_user), "");
@@ -148,11 +148,6 @@ public class ConfirmPayment extends AppCompatActivity {
                 return params;
             }
         };
-
-        strRequest.setRetryPolicy(new DefaultRetryPolicy(
-                15000,
-                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
-                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
 
         // Adding request to request queue
         AppController.getInstance().addToRequestQueue(strRequest, tag_string);

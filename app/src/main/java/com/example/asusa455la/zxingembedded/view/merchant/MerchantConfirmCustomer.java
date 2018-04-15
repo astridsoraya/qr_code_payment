@@ -36,9 +36,12 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -254,12 +257,25 @@ public class MerchantConfirmCustomer extends AppCompatActivity {
 
             try (okhttp3.Response response = client.newCall(request).execute()) {
                 InputStream is = response.body().byteStream();
-                digitalCertificate = Cryptography.loadCertificate(is);
 
-                BufferedSink sink = Okio.buffer(Okio.sink(new File(Environment.getExternalStorageDirectory(), "01.crt")));
-                sink.writeAll(response.body().source());
-                sink.close();
-                response.body().close();
+                File file = new File(Environment.getExternalStorageDirectory(), "01.crt");
+                BufferedInputStream input = new BufferedInputStream(is);
+                OutputStream output = new FileOutputStream(file);
+
+                byte[] data = new byte[1024];
+
+                int count = 0;
+                long total = 0;
+
+                while ((count = input.read(data)) != -1) {
+                    total += count;
+                    output.write(data, 0, count);
+                }
+
+                output.flush();
+                output.close();
+                input.close();
+                digitalCertificate = Cryptography.loadCertificate(file);
 
             } catch (IOException e) {
                 e.printStackTrace();

@@ -22,34 +22,39 @@
     </android.support.design.widget.AppBarLayout>
 
 
+    <ListView
+        android:id="@android:id/list"
+        android:layout_width="309dp"
+        android:layout_height="460dp"
+        android:layout_marginBottom="32dp"
+        android:layout_marginEnd="28dp"
+        android:layout_marginStart="8dp"
+        android:divider="@android:drawable/divider_horizontal_textfield"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.512"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:layout_constraintBottom_creator="1"
+        tools:layout_constraintLeft_creator="1"
+        tools:layout_constraintRight_creator="1"
+        tools:layout_constraintTop_creator="1" />
+
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/floatingAddItemButton"
         android:layout_width="52dp"
         android:layout_height="50dp"
         android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/fab_margin"
-        app:backgroundTint="@android:color/holo_green_light"
-        app:srcCompat="@android:drawable/ic_menu_add" />
-
-    <ListView
-        android:id="@android:id/list"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:divider="@android:drawable/divider_horizontal_textfield"
-        tools:layout_constraintTop_creator="1"
-        tools:layout_constraintRight_creator="1"
-        tools:layout_constraintBottom_creator="1"
+        android:layout_marginBottom="16dp"
+        android:layout_marginEnd="16dp"
         android:layout_marginStart="8dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        android:layout_marginEnd="8dp"
-        app:layout_constraintRight_toRightOf="parent"
         android:layout_marginTop="8dp"
-        tools:layout_constraintLeft_creator="1"
-        android:layout_marginBottom="8dp"
-        app:layout_constraintLeft_toLeftOf="parent"
+        app:backgroundTint="@android:color/holo_green_light"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.935"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintVertical_bias="0.981"
+        app:srcCompat="@android:drawable/ic_menu_add" />
 </android.support.constraint.ConstraintLayout>
