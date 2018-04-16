@@ -59,8 +59,8 @@ import javax.crypto.SecretKey;
 import okhttp3.OkHttpClient;
 
 public class CustomerPrintQRCode extends AppCompatActivity {
-    private static String requestOrderUrl = "https://qrcodepayment.ddns.net/add_order.php";
-    private static String cancelOrderUrl = "https://qrcodepayment.ddns.net/cancel_order.php";
+    private static String requestOrderUrl = "https://qrcodepayment.000webhostapp.com/add_order.php";
+    private static String cancelOrderUrl = "https://qrcodepayment.000webhostapp.com/cancel_order.php";
 
     private CountDownTimer countDownTimer;
 
@@ -110,7 +110,6 @@ public class CustomerPrintQRCode extends AppCompatActivity {
                         .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
                                 cancelOrder();
-                                finish();
                             }
                         });
                 AlertDialog alert = builder.create();
@@ -151,7 +150,7 @@ public class CustomerPrintQRCode extends AppCompatActivity {
                             if(success.equals("1")){
                                 String idOrder = itemResponse.getString("id_order");
                                 idOrderAttribute = idOrder;
-                                new QRCodeCreator(context, alias, idOrder, username).execute("https://qrcodepayment.ddns.net/upload/certs/"+digitalCertificatePath);
+                                new QRCodeCreator(context, alias, idOrder, username).execute("https://qrcodepayment.000webhostapp.com/upload/certs/"+digitalCertificatePath);
                                 pDialog.hide();
                                 Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
                             }
@@ -180,7 +179,7 @@ public class CustomerPrintQRCode extends AppCompatActivity {
 
     private void cancelOrder(){
         SharedPreferences sharedPreferences = this.getSharedPreferences(getString(R.string.shared_pref_appname), Context.MODE_PRIVATE);
-        final String userType = (sharedPreferences.getString((getString(R.string.shared_pref_user_type)), ""));
+        final String idUser = (sharedPreferences.getString((getString(R.string.shared_pref_id_user)), ""));
 
         String tag_string = "string_req";
 
@@ -204,10 +203,12 @@ public class CustomerPrintQRCode extends AppCompatActivity {
                             if(success.equals("1")){
                                 pDialog.hide();
                                 Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
+                                finish();
                             }
                             else{
                                 pDialog.hide();
                                 Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
+                                finish();
                             }
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -229,7 +230,7 @@ public class CustomerPrintQRCode extends AppCompatActivity {
             {
                 Map<String, String> params = new HashMap<>();
                 params.put("id_order", idOrderAttribute);
-                params.put("user_type", userType);
+                params.put("id_customer", idUser);
                 return params;
             }
         };

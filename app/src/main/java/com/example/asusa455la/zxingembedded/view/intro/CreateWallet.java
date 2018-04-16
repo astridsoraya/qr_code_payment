@@ -27,7 +27,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class CreateWallet extends AppCompatActivity {
-    private static String urlCreateWallet = "https://qrcodepayment.ddns.net/create_wallet.php";
+    private static String urlCreateWallet = "https://qrcodepayment.000webhostapp.com/create_wallet.php";
 
     private TextWatcher textWatcher = new TextWatcher() {
         @Override

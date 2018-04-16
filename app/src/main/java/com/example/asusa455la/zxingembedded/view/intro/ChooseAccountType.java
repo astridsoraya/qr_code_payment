@@ -8,6 +8,7 @@ import android.view.View;
 import android.widget.Button;
 
 import com.example.asusa455la.zxingembedded.R;
+import com.example.asusa455la.zxingembedded.view.customer.CustomerPrintQRCode;
 import com.example.asusa455la.zxingembedded.view.customer.CustomerRegistration;
 import com.example.asusa455la.zxingembedded.view.merchant.MerchantRegistration;
 

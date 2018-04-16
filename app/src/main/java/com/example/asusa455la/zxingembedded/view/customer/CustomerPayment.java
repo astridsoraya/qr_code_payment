@@ -65,7 +65,7 @@ import okhttp3.Response;
 
 
 public class CustomerPayment extends AppCompatActivity {
-    private static String urlAuthMerchant = "https://qrcodepayment.ddns.net/confirm_auth.php";
+    private static String urlAuthMerchant = "https://qrcodepayment.000webhostapp.com/confirm_auth.php";
 
     private Button cPayButton;
     private TextView cPaymentDetail;
@@ -190,6 +190,8 @@ public class CustomerPayment extends AppCompatActivity {
                 return params;
             }
         };
+
+
 
         // Adding request to request queue
         AppController.getInstance().addToRequestQueue(strRequest, tag_string);

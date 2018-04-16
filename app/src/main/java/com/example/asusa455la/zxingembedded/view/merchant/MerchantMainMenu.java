@@ -48,7 +48,7 @@ import java.util.Map;
 import javax.net.ssl.TrustManagerFactory;
 
 public class MerchantMainMenu extends AppCompatActivity {
-    private static String urlListItem = "https://qrcodepayment.ddns.net/list_item.php";
+    private static String urlListItem = "https://qrcodepayment.000webhostapp.com/list_item.php";
 
     private SharedPreferences sharedPreferences;
     private AppDatabase appDatabase;

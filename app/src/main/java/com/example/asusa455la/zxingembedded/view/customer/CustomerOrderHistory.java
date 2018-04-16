@@ -60,7 +60,7 @@ import javax.net.ssl.TrustManagerFactory;
 import okhttp3.OkHttpClient;
 
 public class CustomerOrderHistory extends ListActivity {
-    private static String urlListOrder = "https://qrcodepayment.ddns.net/list_order.php";
+    private static String urlListOrder = "https://qrcodepayment.000webhostapp.com/list_order.php";
 
     private ArrayAdapter<String> orderAdapter;
     private ListView orderListView;

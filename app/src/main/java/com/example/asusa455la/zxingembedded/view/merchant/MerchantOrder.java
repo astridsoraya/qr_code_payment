@@ -36,7 +36,7 @@ import java.util.List;
 import java.util.Map;
 
 public class MerchantOrder extends AppCompatActivity {
-    private static String urlOrderItems = "https://qrcodepayment.ddns.net/add_order_items.php";
+    private static String urlOrderItems = "https://qrcodepayment.000webhostapp.com/add_order_items.php";
 
     private AppDatabase appDatabase;
 

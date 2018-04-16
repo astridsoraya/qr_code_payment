@@ -39,7 +39,7 @@ import java.util.Map;
  * A login screen that offers login via email/password.
  */
 public class Login extends AppCompatActivity{
-    private static String urlLogin = "https://qrcodepayment.ddns.net/login.php";
+    private static String urlLogin = "https://qrcodepayment.000webhostapp.com/login.php";
 
     // UI references.
     private AutoCompleteTextView mEmailView;

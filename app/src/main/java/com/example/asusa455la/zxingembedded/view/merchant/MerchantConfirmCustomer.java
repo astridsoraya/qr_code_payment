@@ -59,7 +59,7 @@ import okio.BufferedSink;
 import okio.Okio;
 
 public class MerchantConfirmCustomer extends AppCompatActivity {
-    private static String urlAuthentication = "https://qrcodepayment.ddns.net/confirm_auth.php";
+    private static String urlAuthentication = "https://qrcodepayment.000webhostapp.com/confirm_auth.php";
 
     private static TextView mIdentitasCustomerTextView;
     private Button mAddOrderItems;
@@ -213,7 +213,7 @@ public class MerchantConfirmCustomer extends AppCompatActivity {
     private void displayCustomer(JSONObject jsonObject){
         try {
             digitalCertPath = jsonObject.getString("digital_certificate_customer");
-            new QRCodeVerifier(this, decryptedData, digitalSignature, jsonObject).execute("https://qrcodepayment.ddns.net/upload/certs/"+digitalCertPath);
+            new QRCodeVerifier(this, decryptedData, digitalSignature, jsonObject).execute("https://qrcodepayment.000webhostapp.com/upload/certs/"+digitalCertPath);
         } catch (JSONException e) {
             e.printStackTrace();
         }

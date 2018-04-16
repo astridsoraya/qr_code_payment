@@ -33,7 +33,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ConfirmPayment extends AppCompatActivity {
-    private static String urlConfirmPayment = "https://qrcodepayment.ddns.net/confirm_payment.php";
+    private static String urlConfirmPayment = "https://qrcodepayment.000webhostapp.com/confirm_payment.php";
 
     private TextWatcher textWatcher = new TextWatcher() {
         @Override
@@ -131,6 +131,8 @@ public class ConfirmPayment extends AppCompatActivity {
                     public void onErrorResponse(VolleyError error)
                     {
                         VolleyLog.d(AppController.TAG, "Error: " + error.getMessage());
+                        System.out.println("Error: " + error.networkResponse.statusCode);
+                        System.out.println("Error data: " + new String(error.networkResponse.data));
                         pDialog.hide();
                         Toast.makeText(getApplicationContext(), "System failed to confirm payment.", Toast.LENGTH_SHORT).show();
                     }

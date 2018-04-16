@@ -69,7 +69,7 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 public class MerchantPrintQRCode extends AppCompatActivity {
-    private static String cancelOrderUrl = "https://qrcodepayment.ddns.net/cancel_order.php";
+    private static String cancelOrderUrl = "https://qrcodepayment.000webhostapp.com/cancel_order.php";
     private String idOrderAttribute;
 
     private ImageView qrCodeImageView;
@@ -120,7 +120,6 @@ public class MerchantPrintQRCode extends AppCompatActivity {
                         .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
                                 cancelOrder();
-                                finish();
                             }
                         });
                 AlertDialog alert = builder.create();
@@ -189,7 +188,7 @@ public class MerchantPrintQRCode extends AppCompatActivity {
 
     private void cancelOrder(){
         SharedPreferences sharedPreferences = this.getSharedPreferences(getString(R.string.shared_pref_appname), Context.MODE_PRIVATE);
-        final String userType = (sharedPreferences.getString((getString(R.string.shared_pref_user_type)), ""));
+        final String idUser = (sharedPreferences.getString((getString(R.string.shared_pref_id_user)), ""));
 
         String tag_string = "string_req";
 
@@ -213,10 +212,12 @@ public class MerchantPrintQRCode extends AppCompatActivity {
                             if(success.equals("1")){
                                 pDialog.hide();
                                 Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
+                                finish();
                             }
                             else{
                                 pDialog.hide();
                                 Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
+                                finish();
                             }
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -238,7 +239,7 @@ public class MerchantPrintQRCode extends AppCompatActivity {
             {
                 Map<String, String> params = new HashMap<>();
                 params.put("id_order", idOrderAttribute);
-                params.put("user_type", userType);
+                params.put("id_merchant", idUser);
                 return params;
             }
         };
