@@ -32,6 +32,7 @@ public class CustomerRegistration extends AppCompatActivity {
 
     private EditText firstNameTextBox;
     private EditText lastNameTextBox;
+    private EditText usernameTextBox;
     private EditText emailAddressTextBox;
     private EditText passwordTextBox;
     private EditText handphoneNumberTextBox;
@@ -47,6 +48,7 @@ public class CustomerRegistration extends AppCompatActivity {
 
         this.firstNameTextBox = (EditText) findViewById(R.id.cFirstNameTextBox);
         this.lastNameTextBox = (EditText) findViewById(R.id.cLastNameTextBox);
+        this.usernameTextBox = findViewById(R.id.cUsernameEditText);
         this.emailAddressTextBox = (EditText) findViewById(R.id.cEmailAddressTextBox);
         this.passwordTextBox = (EditText) findViewById(R.id.cPasswordTextBox);
         this.handphoneNumberTextBox = (EditText) findViewById(R.id.cHandphoneNumberTextBox);
@@ -123,6 +125,7 @@ public class CustomerRegistration extends AppCompatActivity {
 
                 params.put("first_name", firstNameTextBox.getText().toString());
                 params.put("last_name", lastNameTextBox.getText().toString());
+                params.put("username", usernameTextBox.getText().toString());
                 params.put("email_address", emailAddressTextBox.getText().toString());
                 params.put("password", passwordTextBox.getText().toString());;
                 params.put("handphone_number", handphoneNumberTextBox.getText().toString());
@@ -148,9 +151,17 @@ public class CustomerRegistration extends AppCompatActivity {
 
         //Verify if last name is not empty
         String lastName = lastNameTextBox.getText().toString();
-        if(TextUtils.isEmpty(firstName)){
+        if(TextUtils.isEmpty(lastName)){
             lastNameTextBox.setError("Last name cannot be empty");
             focusView = lastNameTextBox;
+            success = false;
+        }
+
+        //Verify if last name is not empty
+        String username = usernameTextBox.getText().toString();
+        if(TextUtils.isEmpty(username)){
+            usernameTextBox.setError("Username cannot be empty");
+            focusView = usernameTextBox;
             success = false;
         }
 

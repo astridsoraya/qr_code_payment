@@ -225,7 +225,7 @@ public class Login extends AppCompatActivity{
             protected Map<String, String> getParams()
             {
                 Map<String, String> params = new HashMap<String, String>();
-                params.put("email_address", mEmailView.getText().toString());
+                params.put("credential", mEmailView.getText().toString());
                 params.put("password", mPasswordView.getText().toString());
                 return params;
             }

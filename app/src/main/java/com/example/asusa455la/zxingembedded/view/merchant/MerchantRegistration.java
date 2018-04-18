@@ -31,6 +31,7 @@ public class MerchantRegistration extends AppCompatActivity {
     private static String urlRegister = "https://qrcodepayment.000webhostapp.com/register.php";
 
     private EditText mMerchantNameEditText;
+    private EditText mUsernameEditText;
     private EditText mEmailAddressEditText;
     private EditText mPasswordEditText;
     private EditText mAddressEditText;
@@ -47,6 +48,7 @@ public class MerchantRegistration extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         mMerchantNameEditText = findViewById(R.id.mProfileNameTextBox);
+        mUsernameEditText = findViewById(R.id.mUsernameEditText);
         mEmailAddressEditText = findViewById(R.id.mEmailAddressTextBox);
         mPasswordEditText = findViewById(R.id.mPasswordTextBox);
         mHandphoneNumberEditText = findViewById(R.id.mHandphoneNumberTextBox);
@@ -114,6 +116,7 @@ public class MerchantRegistration extends AppCompatActivity {
                 Map<String, String> params = new HashMap<String, String>();
 
                 params.put("merchant_name", mMerchantNameEditText.getText().toString());
+                params.put("username", mUsernameEditText.getText().toString());
                 params.put("email_address", mEmailAddressEditText.getText().toString());
                 params.put("password",mPasswordEditText.getText().toString());
                 params.put("address", mAddressEditText.getText().toString());
@@ -142,8 +145,16 @@ public class MerchantRegistration extends AppCompatActivity {
         //Verify if merchant name is not empty
         String merchantName = mMerchantNameEditText.getText().toString();
         if(TextUtils.isEmpty(merchantName)){
-            mMerchantNameEditText.setError("Last name cannot be empty");
+            mMerchantNameEditText.setError("Merchant's name cannot be empty");
             focusView = mMerchantNameEditText;
+            success = false;
+        }
+
+        //Verify if merchant name is not empty
+        String username = mUsernameEditText.getText().toString();
+        if(TextUtils.isEmpty(username)){
+            mUsernameEditText.setError("Username cannot be empty");
+            focusView = mUsernameEditText;
             success = false;
         }
 

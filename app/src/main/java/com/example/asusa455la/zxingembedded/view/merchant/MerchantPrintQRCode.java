@@ -114,16 +114,7 @@ public class MerchantPrintQRCode extends AppCompatActivity {
             }
 
             public void onFinish() {
-                AlertDialog.Builder builder = new AlertDialog.Builder(context);
-                builder.setMessage("Time is up! Please, ask the customer to request another order! Returning to main menu...")
-                        .setCancelable(false)
-                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-                                cancelOrder();
-                            }
-                        });
-                AlertDialog alert = builder.create();
-                alert.show();
+                cancelOrder();
             }
         }.start();
     }
@@ -168,9 +159,17 @@ public class MerchantPrintQRCode extends AppCompatActivity {
 
             String plaintext = idOrder+";"+username+";"+totalHarga;
 
-            String qrcode = Cryptography.encrypt(plaintext, secretKey)+";"
-                    +Cryptography.wrapKey(secretKey, digitalCertificate.getPublicKey())+";"
-                    +Cryptography.getDigitalSignature(plaintext, privateKey);
+            String ciphertext = Cryptography.encrypt(plaintext, secretKey);
+            String wrappedKey = Cryptography.wrapKey(secretKey, digitalCertificate.getPublicKey());
+            String digitalSignature = Cryptography.getDigitalSignature(plaintext, privateKey);
+
+
+            System.out.println("Plainteks: " + plaintext);
+            System.out.println("Symmetric Key: " + Base64.encodeToString(secretKey.getEncoded(), Base64.DEFAULT));
+            System.out.println("Public Key: " + Base64.encodeToString(digitalCertificate.getPublicKey().getEncoded(), Base64.DEFAULT));
+
+            String qrcode = ciphertext + ";" + wrappedKey + ";" + digitalSignature;
+            System.out.println("Ciphertext: " + qrcode);
 
             BitMatrix bitMatrix = multiFormatWriter.encode(qrcode, BarcodeFormat.QR_CODE,
                     qrCodeImageView.getWidth(), qrCodeImageView.getHeight());
@@ -178,7 +177,17 @@ public class MerchantPrintQRCode extends AppCompatActivity {
             bitmap = barcodeEncoder.createBitmap(bitMatrix);
             qrCodeImageView.setImageBitmap(bitmap);
 
-            System.out.println("Dean Merchant: " + qrcode);
+            File qrCodeFile = new File(Environment.getExternalStorageDirectory() + File.separator, "qr code" + ".jpg");
+            try {
+                qrCodeFile.createNewFile();
+                OutputStream os = new FileOutputStream(qrCodeFile);
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, os);
+
+                os.flush();
+                os.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 
             pDialog.hide();
         } catch (WriterException | KeyStoreException | UnrecoverableEntryException | NoSuchAlgorithmException | CertificateException | IOException e) {
@@ -191,10 +200,6 @@ public class MerchantPrintQRCode extends AppCompatActivity {
         final String idUser = (sharedPreferences.getString((getString(R.string.shared_pref_id_user)), ""));
 
         String tag_string = "string_req";
-
-        final ProgressDialog pDialog = new ProgressDialog(this);
-        pDialog.setMessage("Canceling order...");
-        pDialog.show();
 
         StringRequest strRequest = new StringRequest(com.android.volley.Request.Method.POST, cancelOrderUrl,
                 new com.android.volley.Response.Listener<String>()
@@ -210,12 +215,10 @@ public class MerchantPrintQRCode extends AppCompatActivity {
                             String message = itemResponse.getString("message");
 
                             if(success.equals("1")){
-                                pDialog.hide();
                                 Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
                                 finish();
                             }
                             else{
-                                pDialog.hide();
                                 Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
                                 finish();
                             }
@@ -230,7 +233,6 @@ public class MerchantPrintQRCode extends AppCompatActivity {
                     public void onErrorResponse(VolleyError error)
                     {
                         VolleyLog.d(AppController.TAG, "Error: " + error.getMessage());
-                        pDialog.hide();
                     }
                 })
         {

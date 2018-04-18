@@ -6,6 +6,7 @@ import android.support.v7.app.AppCompatActivity;
 
 import com.example.asusa455la.zxingembedded.R;
 import com.example.asusa455la.zxingembedded.view.customer.CustomerPayment;
+import com.example.asusa455la.zxingembedded.view.customer.CustomerPrintQRCode;
 import com.example.asusa455la.zxingembedded.view.merchant.MerchantConfirmCustomer;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
