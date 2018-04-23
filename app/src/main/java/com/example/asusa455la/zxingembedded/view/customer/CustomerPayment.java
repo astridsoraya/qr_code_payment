@@ -154,14 +154,15 @@ public class CustomerPayment extends AppCompatActivity {
 
                         try {
                             JSONArray jsonArray= new JSONArray(response);
-
-                            if(jsonArray.length() > 0){
-                                displayOrder(jsonArray);
+                            JSONObject tempJsonObject = jsonArray.getJSONObject(0);
+                            if(tempJsonObject.has("success") && tempJsonObject.has("message")){
                                 pDialog.hide();
+                                Toast.makeText(getApplicationContext(), tempJsonObject.getString("message"), Toast.LENGTH_LONG).show();
+                                finish();
                             }
                             else{
+                                displayOrder(jsonArray);
                                 pDialog.hide();
-                                Toast.makeText(getApplicationContext(), "Order not found", Toast.LENGTH_SHORT).show();
                             }
 
                         } catch (JSONException e) {

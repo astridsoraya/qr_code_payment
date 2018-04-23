@@ -1,18 +1,13 @@
 package com.example.asusa455la.zxingembedded.utility;
 
-import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.res.AssetFileDescriptor;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.security.KeyPairGeneratorSpec;
 import android.security.keystore.KeyGenParameterSpec;
 import android.security.keystore.KeyProperties;
-import android.security.keystore.KeyProtection;
 import android.util.Base64;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.example.asusa455la.zxingembedded.R;
 
@@ -35,21 +30,16 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.security.AlgorithmParameters;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
@@ -60,9 +50,7 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
-import java.security.spec.InvalidParameterSpecException;
 import java.util.Calendar;
-import java.util.Enumeration;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -70,16 +58,7 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
-import javax.crypto.spec.IvParameterSpec;
 import javax.security.auth.x500.X500Principal;
-
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
-import okio.BufferedSink;
-import okio.Okio;
 
 /**
  * Created by ASUS A455LA on 11/02/2018.
@@ -116,15 +95,7 @@ public class Cryptography{
             sign.update(message.getBytes("UTF-8"));
             byte[] signBytes = Base64.decode(signature.getBytes("UTF-8"), Base64.DEFAULT);
             verification = sign.verify(signBytes);
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        }
-        catch (InvalidKeyException e) {
-            e.printStackTrace();
-        }
-        catch (SignatureException e) {
-            e.printStackTrace();
-        } catch (UnsupportedEncodingException e) {
+        } catch (NoSuchAlgorithmException | SignatureException | UnsupportedEncodingException | InvalidKeyException e) {
             e.printStackTrace();
         }
 
@@ -142,17 +113,7 @@ public class Cryptography{
             encryptedText = new String(Base64.encode(encryptedBytes, Base64.DEFAULT));
 
             System.out.println("GO GO: " + encryptedText + " " + Cryptography.decrypt(encryptedText, secretKey));
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (InvalidKeyException e) {
-            e.printStackTrace();
-        } catch (NoSuchPaddingException e) {
-            e.printStackTrace();
-        } catch (BadPaddingException e) {
-            e.printStackTrace();
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        } catch (IllegalBlockSizeException e) {
+        } catch (NoSuchAlgorithmException | InvalidKeyException | NoSuchPaddingException | UnsupportedEncodingException | IllegalBlockSizeException | BadPaddingException e) {
             e.printStackTrace();
         }
 
@@ -166,21 +127,9 @@ public class Cryptography{
             cipher.init(Cipher.DECRYPT_MODE, secretKey);
             byte[] decryptedBytes = Base64.decode(ciphertext.getBytes("UTF-8"), Base64.DEFAULT);
             decryptedText = new String (cipher.doFinal(decryptedBytes), "UTF-8");
-        } catch (InvalidKeyException e) {
+        } catch (InvalidKeyException | NoSuchAlgorithmException | BadPaddingException | NoSuchPaddingException | IllegalBlockSizeException | UnsupportedEncodingException e) {
             e.printStackTrace();
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (NoSuchPaddingException e) {
-            e.printStackTrace();
-        } catch (BadPaddingException e) {
-            e.printStackTrace();
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        } catch (IllegalBlockSizeException e) {
-            e.printStackTrace();
-        } /*catch (NoSuchProviderException e) {
-            e.printStackTrace();
-        }*/
+        }
 
         return decryptedText;
     }
@@ -193,13 +142,7 @@ public class Cryptography{
             cipher.init(Cipher.WRAP_MODE, publicKey);
             byte[] wrappedKey = cipher.wrap(secretKey);
             encryptedText = new String(Base64.encode(wrappedKey, Base64.DEFAULT));
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (InvalidKeyException e) {
-            e.printStackTrace();
-        } catch (NoSuchPaddingException e) {
-            e.printStackTrace();
-        } catch (IllegalBlockSizeException e) {
+        } catch (NoSuchAlgorithmException | InvalidKeyException | IllegalBlockSizeException | NoSuchPaddingException e) {
             e.printStackTrace();
         }
 
@@ -214,13 +157,7 @@ public class Cryptography{
             cipher.init(Cipher.UNWRAP_MODE, privateKey);
             byte[] decryptedBytes = Base64.decode(wrappedKey.getBytes("UTF-8"), Base64.DEFAULT);
             secretKey = (SecretKey) cipher.unwrap(decryptedBytes,"AES/ECB/PKCS5Padding", Cipher.SECRET_KEY);
-        } catch (InvalidKeyException e) {
-            e.printStackTrace();
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (NoSuchPaddingException e) {
-            e.printStackTrace();
-        } catch (UnsupportedEncodingException e) {
+        } catch (InvalidKeyException | NoSuchAlgorithmException | UnsupportedEncodingException | NoSuchPaddingException e) {
             e.printStackTrace();
         }
 
@@ -276,17 +213,7 @@ public class Cryptography{
             ks.setKeyEntry(commonName, privateKey, null, chain);
 
 
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (KeyStoreException e) {
-            e.printStackTrace();
-        } catch (InvalidAlgorithmParameterException e) {
-            e.printStackTrace();
-        } catch (NoSuchProviderException e) {
-            e.printStackTrace();
-        } catch (CertificateException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
+        } catch (NoSuchAlgorithmException | KeyStoreException | NoSuchProviderException | InvalidAlgorithmParameterException | CertificateException | IOException e) {
             e.printStackTrace();
         }
 
@@ -304,9 +231,7 @@ public class Cryptography{
             keyGenerator.init(128);
             secretKey = keyGenerator.generateKey();
 
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (NoSuchProviderException e) {
+        } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
             e.printStackTrace();
         }
 
@@ -420,55 +345,4 @@ public class Cryptography{
         }
         return cert;
     }
-
-    /*public static void downloadCertificate(URL url, String saveFilename){
-        final String filename = saveFilename;
-
-        OkHttpClient client = new OkHttpClient();
-
-        Request request = new Request.Builder()
-                .url(url)
-                .build();
-
-        client.newCall(request)
-                .enqueue(new Callback() {
-                    @Override
-                    public void onFailure(final Call call, IOException e) {
-                        // Error
-                        System.out.println("Error okHTTP: " + e.toString());
-                    }
-
-                    @Override
-                    public void onResponse(Call call, final Response response) throws IOException {
-                        File downloadedFile = new File(Environment.getExternalStorageDirectory() + File.separator + "CERT Folder", filename);
-                        BufferedSink sink = Okio.buffer(Okio.sink(downloadedFile));
-                        sink.writeAll(response.body().source());
-                        sink.close();
-                        response.body().source().close();
-                        downloadedFile.createNewFile();
-                        System.out.println("Infinite Tell Me");
-
-*//*                        InputStream is = response.body().byteStream();
-
-
-
-                        response.body().source().close();
-
-                        pDialog.hide();*//*
-                    }
-                });
-    }*/
-
-/*    public static String produceSalt(){
-        SecureRandom random = new SecureRandom();
-        byte[] salt = new byte[17];
-        random.nextBytes(salt);
-
-        StringBuffer sb = new StringBuffer();
-
-        for (int i = 0; i < salt.length; i++){
-            sb.append(Integer.toString((salt[i] & 0xff) + 0x100, 16).substring(1));
-        }
-        return sb.toString();
-    }*/
 }

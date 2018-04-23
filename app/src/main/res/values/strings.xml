@@ -63,12 +63,11 @@
     <string name="title_activity_confirm_payment">Confirm Payment</string>
     <string name="title_activity_item_list">Items list</string>
     <string name="title_activity_add_item">Add item</string>
-    <string name="title_activity_customer_order_history">CustomerOrderHistory</string>
-    <string name="title_activity_merchant_order_history">MerchantOrderHistory</string>
-    <string name="title_activity_merchant_confirm_customer">MerchantConfirmCustomer</string>
-    <string name="title_activity_merchant_insert_username">MerchantInsertUsername</string>
-    <string name="title_activity_customer_print_qrcode">CustomerPrintQRCode</string>
-    <string name="title_activity_browse_merchant">BrowseMerchant</string>
+    <string name="title_activity_customer_order_history">Order History</string>
+    <string name="title_activity_merchant_order_history">Order History</string>
+    <string name="title_activity_merchant_confirm_customer">Confirm Customer's Identity </string>
+    <string name="title_activity_customer_print_qrcode">Print QR Code</string>
+    <string name="title_activity_browse_merchant">Browse Merchant</string>
 
     <string name="countdown_caption">Remaining time to scan: </string>
 

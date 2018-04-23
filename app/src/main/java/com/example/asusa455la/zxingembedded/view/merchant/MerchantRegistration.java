@@ -47,11 +47,11 @@ public class MerchantRegistration extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        mMerchantNameEditText = findViewById(R.id.mProfileNameTextBox);
+        mMerchantNameEditText = findViewById(R.id.mMerchantNameEditText);
         mUsernameEditText = findViewById(R.id.mUsernameEditText);
-        mEmailAddressEditText = findViewById(R.id.mEmailAddressTextBox);
-        mPasswordEditText = findViewById(R.id.mPasswordTextBox);
-        mHandphoneNumberEditText = findViewById(R.id.mHandphoneNumberTextBox);
+        mEmailAddressEditText = findViewById(R.id.mEmailAddressEditText);
+        mPasswordEditText = findViewById(R.id.mPasswordEditText);
+        mHandphoneNumberEditText = findViewById(R.id.mHandphoneNumberEditText);
         mAddressEditText = findViewById(R.id.mAddressEditText);
 
         mRegisterButton =  findViewById(R.id.mRegisterButton);
